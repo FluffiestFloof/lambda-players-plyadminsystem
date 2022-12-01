@@ -139,7 +139,7 @@ local PACommands = {
     end,
 
     -- Removes all spawned entities of the Lambda Player
-    -- ,clearent [target]
+    -- ,clearents [target]
     ["clearents"] = function( lambda, ply )
         lambda:CleanSpawnedEntities()
 
