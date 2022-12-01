@@ -48,14 +48,18 @@ local function ExtractInfo( s )
 end
 
 if SERVER then
+
+    local function PrintToChat( tbl )
+        net.Start( "lambdaplyadmin_chatprint", true )
+        net.WriteString( util.TableToJSON(tbl))
+        net.Broadcast()
+    end
     
     local function GotoLambda(lambda, caller)
-        net.Start( "lambdaplyadmin_chatprint", true )
-        net.WriteString( util.TableToJSON({ Color(0,255,0), "You", Color(130,164,192), " teleported to ", Color(0,255,0), lambda:GetLambdaName() }))
-        net.Broadcast()
-
         caller.lambdaLastPos = caller:GetPos()
         caller:SetPos( lambda:GetPos() + ( ( caller:GetPos() - lambda:GetPos() ):Angle():Forward() ) * 100 )
+
+        PrintToChat( { Color(0,255,0), "You", Color(130,164,192), " teleported to ", Color(0,255,0), lambda:GetLambdaName() } )
     end
 
     local function ReturnLambda(lambda, caller)
@@ -66,34 +70,28 @@ if SERVER then
                 name = "Yourself"
             end
 
-            net.Start( "lambdaplyadmin_chatprint", true )
-            net.WriteString( util.TableToJSON({ Color(0,255,0), "You", Color(130,164,192), " returned ", Color(0,255,0), name, Color(130,164,192), " back to their original position" }))
-            net.Broadcast()
-
             lambda:SetPos( lambda.lambdaLastPos )
+
+            PrintToChat( { Color(0,255,0), "You", Color(130,164,192), " returned ", Color(0,255,0), name, Color(130,164,192), " back to their original position" } )
         end
     end
 
     local function BringLambda(lambda, caller)
-        net.Start( "lambdaplyadmin_chatprint", true )
-        net.WriteString(util.TableToJSON({ Color(0,255,0), "You", Color(130,164,192), " brought ", Color(0,255,0), lambda:GetLambdaName(), Color(130,164,192),"to yourself"}))
-        net.Broadcast()
-
         lambda.lambdaLastPos = lambda:GetPos()
         lambda.CurNoclipPos = caller:GetEyeTrace().HitPos
         lambda:SetPos( caller:GetPos() + caller:GetForward()*100 )
+
+        PrintToChat( { Color(0,255,0), "You", Color(130,164,192), " brought ", Color(0,255,0), lambda:GetLambdaName(), Color(130,164,192),"to yourself"} )
     end
 
-    local function SlayLambda(lambda, caller)
-        net.Start( "lambdaplyadmin_chatprint", true )
-        net.WriteString( util.TableToJSON({ Color(0,255,0), caller:GetName(), Color(130,164,192), " slayed ", Color(0,255,0), lambda:GetLambdaName() }))
-        net.Broadcast()
-        
+    local function SlayLambda(lambda, caller)        
         local dmginfo = DamageInfo()
         dmginfo:SetDamage( 0 )
         dmginfo:SetAttacker( lambda )
         dmginfo:SetInflictor( lambda )
         lambda:LambdaOnKilled( dmginfo )
+
+        PrintToChat( { Color(0,255,0), caller:GetName(), Color(130,164,192), " slayed ", Color(0,255,0), lambda:GetLambdaName() } )
     end
 
     local function KickLambda(lambda, caller, reason)
@@ -101,11 +99,9 @@ if SERVER then
             reason = "No reason provided."
         end
 
-        net.Start( "lambdaplyadmin_chatprint", true )
-        net.WriteString( util.TableToJSON({ Color(0,255,0), caller:GetName(), Color(130,164,192), " kicked ", Color(0,255,0), lambda:GetLambdaName(), " ", Color(130,164,192), "(", Color(0,255,0), reason, Color(130,164,192) ,")" }))
-        net.Broadcast()
-
         lambda:Remove()
+
+        PrintToChat( { Color(0,255,0), caller:GetName(), Color(130,164,192), " kicked ", Color(0,255,0), lambda:GetLambdaName(), " ", Color(130,164,192), "(", Color(0,255,0), reason, Color(130,164,192) ,")" } )
     end
 
     --[[
@@ -305,7 +301,7 @@ if SERVER then
         -- Goto Target
         if txtcmd == ",goto" then
             GotoLambda( lambda, ply )
-            
+
             return ""
         end
 
