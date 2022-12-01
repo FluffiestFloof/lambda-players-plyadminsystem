@@ -2,6 +2,7 @@ local IsValid = IsValid
 local pairs = pairs
 local random = math.random
 local VectorRand = VectorRand
+local max = math.max
 local net = net
 
 
@@ -25,7 +26,9 @@ local function FindLambda( name )
         if string.lower(v:GetLambdaName()) == string.lower(name) then found = v end
     end
 
-    -- If fails to find a lambda with the full name, tries to find the name somewhere in the Lambdas name.
+    -- If fails to find a lambda with the full name, tries to find the name somewhere.
+    -- Probably should just keep one since they give very similar result?
+    -- This one is just a russian roulette if the user inputs one letter :v
     if !found then
         for k, v in ipairs( GetLambdaPlayers() ) do
             if string.match( string.lower(v:GetLambdaName()), string.lower(name) ) then found = v end
@@ -61,15 +64,17 @@ local function ExtractInfo( s )
             i = i + 1
         end
     end
+    -- They can figure it out themselves. If the user manage to fail operating a simple chat command, ain't my problem.
     --[[if buf then
-        print("DEBUG: Missing matching quote for "..buf)
-    end]] -- They can figure it out themselves.
+        print("DEBUG: Missing a quote to complete "..buf)
+    end]]
+
 
     return info[1], info[2], info[3] --Only returns the command and two extras. Anything else is voided because who cares
 end
 
 
--- Helper function to lower clutter that prints to players chat
+-- Helper function to lower clutter in other functions. It prints to clients chat
 local function PrintToChat( tbl )
     net.Start( "lambdaplyadmin_chatprint", true )
     net.WriteString( util.TableToJSON(tbl))
@@ -84,26 +89,22 @@ end
 
 
 
-local function GotoLambda(lambda, caller)
+local function PAGotoLambda(lambda, caller)
     caller.lambdaLastPos = caller:GetPos()
     caller:SetPos( lambda:GetPos() + ( ( caller:GetPos() - lambda:GetPos() ):Angle():Forward() ) * 100 )
 
     PrintToChat( { Color(0,255,0), "You", Color(130,164,192), " teleported to ", Color(0,255,0), lambda:GetLambdaName() } )
 end
 
-local function ReturnLambda(lambda, caller)
-    local name = lambda:GetLambdaName()
 
-    if lambda:IsPlayer() then
-        name = "Yourself"
-    end
-
+local function PAReturnLambda(lambda, caller)
     lambda:SetPos( lambda.lambdaLastPos )
 
-    PrintToChat( { Color(0,255,0), "You", Color(130,164,192), " returned ", Color(0,255,0), name, Color(130,164,192), " back to their original position" } )
+    PrintToChat( { Color(0,255,0), "You", Color(130,164,192), " returned ", Color(0,255,0), lambda:GetLambdaName(), Color(130,164,192), " back to their original position" } )
 end
 
-local function BringLambda(lambda, caller)
+
+local function PABringLambda(lambda, caller)
     lambda.lambdaLastPos = lambda:GetPos()
     lambda.CurNoclipPos = caller:GetEyeTrace().HitPos
     lambda:SetPos( caller:GetPos() + caller:GetForward()*100 )
@@ -111,7 +112,8 @@ local function BringLambda(lambda, caller)
     PrintToChat( { Color(0,255,0), "You", Color(130,164,192), " brought ", Color(0,255,0), lambda:GetLambdaName(), Color(130,164,192),"to yourself"} )
 end
 
-local function SlayLambda(lambda, caller)        
+
+local function PASlayLambda(lambda, caller)        
     local dmginfo = DamageInfo()
     dmginfo:SetDamage( 0 )
     dmginfo:SetAttacker( lambda )
@@ -121,7 +123,8 @@ local function SlayLambda(lambda, caller)
     PrintToChat( { Color(0,255,0), caller:GetName(), Color(130,164,192), " slayed ", Color(0,255,0), lambda:GetLambdaName() } )
 end
 
-local function KickLambda(lambda, caller, reason)
+
+local function PAKickLambda(lambda, caller, reason)
     if reason == "" or !reason then
         reason = "No reason provided."
     end
@@ -131,13 +134,15 @@ local function KickLambda(lambda, caller, reason)
     PrintToChat( { Color(0,255,0), caller:GetName(), Color(130,164,192), " kicked ", Color(0,255,0), lambda:GetLambdaName(), " ", Color(130,164,192), "(", Color(0,255,0), reason, Color(130,164,192) ,")" } )
 end
 
-local function ClearentsLambda(lambda, caller)
+
+local function PAClearentsLambda(lambda, caller)
     lambda:CleanSpawnedEntities()
 
-    PrintToChat( { Color(0,255,0), caller:GetName(), Color(130,164,192), " cleared ", Color(0,255,0), lambda:GetLambdaName(), " ", Color(130,164,192), " entities" } )
+    PrintToChat( { Color(0,255,0), caller:GetName(), Color(130,164,192), " cleared ", Color(0,255,0), lambda:GetLambdaName(), Color(130,164,192), " entities" } )
 end
 
-local function IgniteLambda(lambda, caller, length)
+
+local function PAIgniteLambda(lambda, caller, length)
     length = tonumber(length) or 10
 
     lambda:Ignite(length)
@@ -145,16 +150,16 @@ local function IgniteLambda(lambda, caller, length)
     PrintToChat( { Color(0,255,0), caller:GetName(), Color(130,164,192), " set ", Color(0,255,0), lambda:GetLambdaName(), " on fire for ", Color(0,255,0), tostring(length), " seconds" } )
 end
 
-local function ExtinguishLambda(lambda, caller)
+
+local function PAExtinguishLambda(lambda, caller)
     lambda:Extinguish()
     
     PrintToChat( { Color(0,255,0), caller:GetName(), Color(130,164,192), " extinguished ", Color(0,255,0), lambda:GetLambdaName()} )
 end
 
 
-
 local slapSounds = { "physics/body/body_medium_impact_hard1.wav", "physics/body/body_medium_impact_hard2.wav", "physics/body/body_medium_impact_hard3.wav", "physics/body/body_medium_impact_hard5.wav", "physics/body/body_medium_impact_hard6.wav", "physics/body/body_medium_impact_soft5.wav", "physics/body/body_medium_impact_soft6.wav", "physics/body/body_medium_impact_soft7.wav" }
-local function SlapLambda(lambda, caller, damage)
+local function PASlapLambda(lambda, caller, damage)
     damage = tonumber(damage) or 0 -- Prevent player from inputing a name and then complaining about lua errors :)
 
     local direction = Vector( random( 50 )-25, random( 50 )-25, random( 50 ) ) -- Make it random, slightly biased to go up.
@@ -171,6 +176,25 @@ local function SlapLambda(lambda, caller, damage)
 end
 
 
+local function PASetHealthLambda(lambda, caller, amount)
+    if amount <= 0 then 
+        lambda:TakeDamage(lambda:GetMaxHealth(), lambda, lambda) -- Prevent setting health to negative :)
+    else
+        lambda:SetHealth(amount)
+    end
+
+    PrintToChat( { Color(0,255,0), caller:GetName(), Color(130,164,192)," set ", Color(0,255,0), lambda:GetLambdaName(), Color(130,164,192), " health to ", Color(0,255,0), tostring(amount) } )
+end
+
+
+local function PASetArmorLambda(lambda, caller, amount)
+    amount = max( 0, amount ) -- Prevent setting armor to negative
+
+    lambda:SetArmor( amount )
+
+    PrintToChat( { Color(0,255,0), caller:GetName(), Color(130,164,192)," set ", Color(0,255,0), lambda:GetLambdaName(), Color(130,164,192), " armor to ", Color(0,255,0), tostring(amount) } )
+end
+
 
 -- -------------------------------- --
 -- // SCOREBOARD COMMANDS ACTION // --
@@ -182,17 +206,18 @@ end
 -- I don't know if having net stuff all around the place is smart but it works
 util.AddNetworkString("lambdaplyadmin_scoreboardaction")
 
-net.Receive("lambdaplyadmin_scoreboardaction",function()
+net.Receive("lambdaplyadmin_scoreboardaction", function()
     local cmd = net.ReadString()
-    local name = net.ReadString()
+    local lambda = net.ReadEntity( )
+    local ply = net.ReadEntity( )
 
     -- meh
     if cmd == "slay" then
-
+        SlayLambda( lambda, ply )
     elseif cmd == "kick" then
-
-    elseif cmd == "clearent" then
-
+        KickLambda( lambda, ply )
+    elseif cmd == "clearents" then
+        ClearentsLambda( lambda, ply )
     end
 
 end)
@@ -206,20 +231,27 @@ end)
 
 
 hook.Add( "PlayerSay", "lambdaplyadminPlayerSay", function( ply, text )
-    if string.StartWith(string.lower(text), ",") then
+    if string.StartWith(string.lower(text), ",") then -- if it doesn't look like a command, we don't care.
+
+        -- Check if the one inputing the command is an admin and provide hint if not.
         if !ply:IsAdmin() then ply:PrintMessage( HUD_PRINTTALK, "You need to be an admin to use "..txtcmd ) return "" end
+        
+        -- Extract all the information out of the provided chat line.
         local txtcmd, txtname, txtextra = ExtractInfo( text )
         
-        --Put all the checks here, we always need a target anyway
+        -- Check if a name was provided and provide hint if not.
         if txtname == nil then ply:PrintMessage( HUD_PRINTTALK, txtcmd.." is missing a target" ) return "" end
         
+        -- Check if the Lambda exist and provide hint if not.
         local lambda = FindLambda( txtname )
         if !IsValid( lambda ) then ply:PrintMessage( HUD_PRINTTALK, txtname.." is not a valid target" ) return "" end
+
+        -- Commands below here.
 
         -- Makes Player go to a Lambda
         -- ,goto [target]
         if txtcmd == ",goto" then
-            GotoLambda( lambda, ply )
+            PAGotoLambda( lambda, ply )
 
             return ""
         end
@@ -227,7 +259,7 @@ hook.Add( "PlayerSay", "lambdaplyadminPlayerSay", function( ply, text )
         -- Makes Lambda go to Player
         -- ,bring [target]
         if txtcmd == ",bring" then
-            BringLambda(lambda,ply)
+            PABringLambda(lambda,ply)
 
             return ""
         end
@@ -274,7 +306,7 @@ hook.Add( "PlayerSay", "lambdaplyadminPlayerSay", function( ply, text )
             return ""
         end
 
-        -- Sets a Lambda on fire
+        -- Sets a Lambda on fire, you monster
         -- ,ignite [target] [time] // Time defaults to 10
         if txtcmd == ",ignite" then
             IgniteLambda(lambda, ply, txtextra)
@@ -284,9 +316,27 @@ hook.Add( "PlayerSay", "lambdaplyadminPlayerSay", function( ply, text )
 
         -- Extinguish a Lambda
         -- ,extinguish [target]
-        if txtcmd == ",ignite" then
+        if txtcmd == ",extinguish" then
             if !lambda:IsOnfire() then ply:PrintMessage( HUD_PRINTTALK, lambda:GetLambdaName().." is not on fire" ) return "" end
             ExtinguishLambda(lambda, ply)
+
+            return ""
+        end
+
+        -- Set a Lambda's Health
+        -- ,sethealth [target] [amount] // Amount defaults to 0
+        if txtcmd == ",sethealth" then
+            txtextra = tonumber(txtextra) or 0
+            SetHealthLambda(lambda, ply, txtextra)
+
+            return ""
+        end
+
+        -- Set a Lambda's Armor
+        -- ,setarmor [target] [amount] // Amount defaults to 0
+        if txtcmd == ",setarmor" then
+            txtextra = tonumber(txtextra) or 0
+            SetArmorLambda(lambda, ply, txtextra)
 
             return ""
         end
