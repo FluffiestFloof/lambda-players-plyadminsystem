@@ -286,206 +286,174 @@ if SERVER then
     end ]]
 
     hook.Add( "PlayerSay", "lambdaplyadminPlayerSay", function( ply, text )
-        if !string.sub(text, 1, 1) == "," then return end
-        local txtcmd, txtname, txtextra = ExtractInfo( text )
-        
-        --Put all the checks here, we always need a target anyway
-        if txtname == nil then ply:PrintMessage( HUD_PRINTTALK, txtcmd.." is missing a target" ) return "" end
-        
-        local lambda = FindLambda( txtname )
-        if !IsValid( lambda ) then ply:PrintMessage( HUD_PRINTTALK, txtname.." is not a valid target" ) return "" end
-
-        -- Makes Player go to a Lambda
-        -- ,goto [target]
-        if txtcmd == ",goto" then
-            GotoLambda( lambda, ply )
-
-            return ""
-        end
-
-        -- Makes Lambda go to Player
-        -- ,bring [target]
-        if txtcmd == ",bring" then
-            BringLambda(lambda,ply)
-
-            return ""
-        end
-
-        -- Return Lambda to previous position after teleportation
-        -- ,return [target]
-        if txtcmd == ",return" then
-            if !lambda.lambdaLastPos then ply:PrintMessage( HUD_PRINTTALK, txtname.." can't be returned" ) return end
+        if string.StartWith(string.lower(text), ",") then
+            if !ply:IsAdmin() then ply:PrintMessage( HUD_PRINTTALK, "You need to be an admin to use "..txtcmd ) return "" end
+            local txtcmd, txtname, txtextra = ExtractInfo( text )
             
-            ReturnLambda( lambda, ply )
-
-            return ""
-        end
-
-        -- Kill a Lambda for evil pleasure
-        -- ,slay [target]
-        if txtcmd == ",slay" then
-            SlayLambda( lambda, ply )
+            --Put all the checks here, we always need a target anyway
+            if txtname == nil then ply:PrintMessage( HUD_PRINTTALK, txtcmd.." is missing a target" ) return "" end
             
-            return ""
-        end
+            local lambda = FindLambda( txtname )
+            if !IsValid( lambda ) then ply:PrintMessage( HUD_PRINTTALK, txtname.." is not a valid target" ) return "" end
 
-        -- Clear a Lambda's entities
-        -- ,clearent [target]
-        if txtcmd == ",clearents" then
-            ClearentsLambda(lambda, ply)
+            -- Makes Player go to a Lambda
+            -- ,goto [target]
+            if txtcmd == ",goto" then
+                GotoLambda( lambda, ply )
 
-            return ""
-        end
-        
-        -- Remove a Lambda from the game
-        -- ,kick [target] [reason]
-        if txtcmd == ",kick" then
-            KickLambda(lambda, ply, txtextra)
-
-            return ""
-        end
-
-        if txtcmd == ",slap" then
-            SlapLambda(lambda, ply, txtextra)
-
-            return ""
-        end
-
-        --[[
-        if txtcmd == ",ban" then
-            
-            local reason = ""
-            local time 
-            local name 
-            for k,v in ipairs(split) do
-                if k == 2 then
-                    name = v
-                elseif k == 3 then
-                    time = v
-                elseif k >= 4 then
-                    reason = reason..v.." "
-                end
+                return ""
             end
 
-            local zeta = FindZetaByName(name)
+            -- Makes Lambda go to Player
+            -- ,bring [target]
+            if txtcmd == ",bring" then
+                BringLambda(lambda,ply)
 
-            if !IsValid(zeta) then ply:PrintMessage(HUD_PRINTTALK,name.." is not valid") return "" end
+                return ""
+            end
 
-            PlayerBanZeta(zeta,ply,reason,tonumber(time))
-            return ""
-        end
+            -- Return Lambda to previous position after teleportation
+            -- ,return [target]
+            if txtcmd == ",return" then
+                if !lambda.lambdaLastPos then ply:PrintMessage( HUD_PRINTTALK, txtname.." can't be returned" ) return end
+                
+                ReturnLambda( lambda, ply )
 
-        if txtcmd == ",slap" then
+                return ""
+            end
+
+            -- Kill a Lambda for evil pleasure
+            -- ,slay [target]
+            if txtcmd == ",slay" then
+                SlayLambda( lambda, ply )
+                
+                return ""
+            end
+
+            -- Clear a Lambda's entities
+            -- ,clearent [target]
+            if txtcmd == ",clearents" then
+                ClearentsLambda(lambda, ply)
+
+                return ""
+            end
             
-            local dmg = split[3] or 0
-            local zeta = FindZetaByName(name)
+            -- Remove a Lambda from the game
+            -- ,kick [target] [reason]
+            if txtcmd == ",kick" then
+                KickLambda(lambda, ply, txtextra)
 
-            if !IsValid(zeta) then ply:PrintMessage(HUD_PRINTTALK,name.." is not valid") return "" end
+                return ""
+            end
 
-            PlayerslapZeta(zeta,ply,dmg)
-            return ""
-        end
+            if txtcmd == ",slap" then
+                SlapLambda(lambda, ply, txtextra)
 
-        if txtcmd == ",whip" then
+                return ""
+            end
+
+            --[[
+            if txtcmd == ",whip" then
+                
+                local dmg = split[3] or 0
+                local times = split[4] or 10
+
+                local zeta = FindZetaByName(name)
+
+                if !IsValid(zeta) then ply:PrintMessage(HUD_PRINTTALK,name.." is not valid") return "" end
+
+                PlayerWhipZeta(zeta,ply,dmg,times)
+                return ""
+            end
+
+            if txtcmd == ",ignite" then
+                
+                local length = split[3] or 5
+                local zeta = FindZetaByName(name)
+
+                if !IsValid(zeta) then ply:PrintMessage(HUD_PRINTTALK,name.." is not valid") return "" end
+
+                PlayerigniteZeta(zeta,ply,length)
+                return ""
+            end
+
+            if txtcmd == ",sethealth" then
+                
+                local hp = split[3] or 100
+                local zeta = FindZetaByName(name)
+
+                if !IsValid(zeta) then ply:PrintMessage(HUD_PRINTTALK,name.." is not valid") return "" end
+
+                PlayersethealthZeta(zeta,ply,hp)
+                return ""
+            end
+
+            if txtcmd == ",setarmor" then
+                
+                local armor = split[3] or 0
+                local zeta = FindZetaByName(name)
+
+                if !IsValid(zeta) then ply:PrintMessage(HUD_PRINTTALK,name.." is not valid") return "" end
+
+                PlayersetarmorZeta(zeta,ply,armor)
+                return ""
+            end
+
+            if txtcmd == ",god" then
+                
+                local zeta = FindZetaByName(name)
+
+                if !IsValid(zeta) then ply:PrintMessage(HUD_PRINTTALK,name.." is not valid") return "" end
+                if zeta.zetaIngodmode then ply:PrintMessage(HUD_PRINTTALK,name.." is already in god mode") return "" end
+
+                PlayerGodModeZeta(zeta,ply)
+                return ""
+            end
+
+            if txtcmd == ",ungod" then
+                
+                local zeta = FindZetaByName(name)
+
+                if !IsValid(zeta) then ply:PrintMessage(HUD_PRINTTALK,name.." is not valid") return "" end
+                if !zeta.zetaIngodmode then ply:PrintMessage(HUD_PRINTTALK,name.." is already a mortal") return "" end
+
+                PlayerUnGodZeta(zeta,ply)
+                return ""
+            end
+
+            if txtcmd == ",jail" then
+                
+                local zeta = FindZetaByName(name)
+
+                if !IsValid(zeta) then ply:PrintMessage(HUD_PRINTTALK,name.." is not valid") return "" end
+                if zeta.IsJailed then ply:PrintMessage(HUD_PRINTTALK,name.." is already in jail") return "" end
+
+                PlayerjailZeta(zeta,ply)
+                return ""
+            end
+
+            if txtcmd == ",tpjail" then
+                
+                local zeta = FindZetaByName(name)
+
+                if !IsValid(zeta) then ply:PrintMessage(HUD_PRINTTALK,name.." is not valid") return "" end
+                if zeta.IsJailed then ply:PrintMessage(HUD_PRINTTALK,name.." is already in jail") return "" end
+
+                PlayertpjailZeta(zeta,ply)
+                return ""
+            end
             
-            local dmg = split[3] or 0
-            local times = split[4] or 10
+            if txtcmd == ",unjail" then
+                
+                local zeta = FindZetaByName(name)
 
-            local zeta = FindZetaByName(name)
+                if !IsValid(zeta) then ply:PrintMessage(HUD_PRINTTALK,name.." is not valid") return "" end
+                if !zeta.IsJailed then ply:PrintMessage(HUD_PRINTTALK,name.." is not in jail") return "" end
 
-            if !IsValid(zeta) then ply:PrintMessage(HUD_PRINTTALK,name.." is not valid") return "" end
-
-            PlayerWhipZeta(zeta,ply,dmg,times)
-            return ""
+                PlayerunjailZeta(zeta,ply)
+                return ""
+            end ]]
         end
-
-        if txtcmd == ",ignite" then
-            
-            local length = split[3] or 5
-            local zeta = FindZetaByName(name)
-
-            if !IsValid(zeta) then ply:PrintMessage(HUD_PRINTTALK,name.." is not valid") return "" end
-
-            PlayerigniteZeta(zeta,ply,length)
-            return ""
-        end
-
-        if txtcmd == ",sethealth" then
-            
-            local hp = split[3] or 100
-            local zeta = FindZetaByName(name)
-
-            if !IsValid(zeta) then ply:PrintMessage(HUD_PRINTTALK,name.." is not valid") return "" end
-
-            PlayersethealthZeta(zeta,ply,hp)
-            return ""
-        end
-
-        if txtcmd == ",setarmor" then
-            
-            local armor = split[3] or 0
-            local zeta = FindZetaByName(name)
-
-            if !IsValid(zeta) then ply:PrintMessage(HUD_PRINTTALK,name.." is not valid") return "" end
-
-            PlayersetarmorZeta(zeta,ply,armor)
-            return ""
-        end
-
-        if txtcmd == ",god" then
-            
-            local zeta = FindZetaByName(name)
-
-            if !IsValid(zeta) then ply:PrintMessage(HUD_PRINTTALK,name.." is not valid") return "" end
-            if zeta.zetaIngodmode then ply:PrintMessage(HUD_PRINTTALK,name.." is already in god mode") return "" end
-
-            PlayerGodModeZeta(zeta,ply)
-            return ""
-        end
-
-        if txtcmd == ",ungod" then
-            
-            local zeta = FindZetaByName(name)
-
-            if !IsValid(zeta) then ply:PrintMessage(HUD_PRINTTALK,name.." is not valid") return "" end
-            if !zeta.zetaIngodmode then ply:PrintMessage(HUD_PRINTTALK,name.." is already a mortal") return "" end
-
-            PlayerUnGodZeta(zeta,ply)
-            return ""
-        end
-
-        if txtcmd == ",jail" then
-            
-            local zeta = FindZetaByName(name)
-
-            if !IsValid(zeta) then ply:PrintMessage(HUD_PRINTTALK,name.." is not valid") return "" end
-            if zeta.IsJailed then ply:PrintMessage(HUD_PRINTTALK,name.." is already in jail") return "" end
-
-            PlayerjailZeta(zeta,ply)
-            return ""
-        end
-
-        if txtcmd == ",tpjail" then
-            
-            local zeta = FindZetaByName(name)
-
-            if !IsValid(zeta) then ply:PrintMessage(HUD_PRINTTALK,name.." is not valid") return "" end
-            if zeta.IsJailed then ply:PrintMessage(HUD_PRINTTALK,name.." is already in jail") return "" end
-
-            PlayertpjailZeta(zeta,ply)
-            return ""
-        end
-        
-        if txtcmd == ",unjail" then
-            
-            local zeta = FindZetaByName(name)
-
-            if !IsValid(zeta) then ply:PrintMessage(HUD_PRINTTALK,name.." is not valid") return "" end
-            if !zeta.IsJailed then ply:PrintMessage(HUD_PRINTTALK,name.." is not in jail") return "" end
-
-            PlayerunjailZeta(zeta,ply)
-            return ""
-        end ]]
         
     end)
 
