@@ -66,17 +66,18 @@ local function ExtractInfo( s )
             i = i + 1
         end
     end
-    -- They can figure it out themselves. If the user manage to fail operating a simple chat command, ain't my problem.
+
+    -- If an apostrophe doesn't have a 'closing' apostrophe, it should do something.
     --[[if buf then
         print("DEBUG: Missing a quote to complete "..buf)
     end]]
 
 
-    return info[1], info[2], info[3], info[4] --Only returns the command and two extras. Anything else is voided because who cares
+    return info[1], info[2], info[3], info[4] --Only returns the command and two extras. Anything else is voided because we don't need it
 end
 
 
--- Helper function to lower clutter in other functions. It prints to clients chat
+-- Helper function to lower clutter in other functions. It prints to clients chat.
 local function PrintToChat( tbl )
     net.Start( "lambdaplyadmin_chatprint", true )
     net.WriteString( util.TableToJSON(tbl))
@@ -92,8 +93,10 @@ end
 
 
 local slapSounds = { "physics/body/body_medium_impact_hard1.wav", "physics/body/body_medium_impact_hard2.wav", "physics/body/body_medium_impact_hard3.wav", "physics/body/body_medium_impact_hard5.wav", "physics/body/body_medium_impact_hard6.wav", "physics/body/body_medium_impact_soft5.wav", "physics/body/body_medium_impact_soft6.wav", "physics/body/body_medium_impact_soft7.wav" }
--- Switch case. You might not like it but this is what peak programming looks like :chad:
+
+-- Table of Functions.
 local PACommands = {
+    
     -- Teleports the Player to the Lambda Player
     -- ,goto [target]
     ["goto"] = function( lambda, ply )
@@ -184,6 +187,7 @@ local PACommands = {
 
         timer.Create( "lambdaplyadmin_whip_"..lambda:EntIndex(),0.5,times,function()
             if !IsValid( lambda ) then timer.Remove( "lambdaplyadmin_whip_"..lambda:EntIndex() ) return end
+            
             if !lambda:IsInNoClip() then
                 lambda.loco:Jump()
                 lambda.loco:SetVelocity( direction * ( damage + 1 ) )
@@ -253,7 +257,6 @@ local PACommands = {
 
 
 -- Deal with the scoreboard admin clicky click things
--- I don't know if having net stuff all around the place is smart but it works
 util.AddNetworkString("lambdaplyadmin_scoreboardaction")
 
 net.Receive("lambdaplyadmin_scoreboardaction", function()
@@ -275,21 +278,21 @@ end)
 hook.Add( "PlayerSay", "lambdaplyadminPlayerSay", function( ply, text )
     if string.StartWith(string.lower(text), ",") then -- if it doesn't look like a command, we don't care.
 
-        -- Check if the one inputing the command is an admin and provide hint if not.
+        -- Check if the one inputing the command is an admin otherwise tells player.
         if !ply:IsAdmin() then ply:PrintMessage( HUD_PRINTTALK, "You need to be an admin to use "..c_cmd ) return "" end
         
         -- Extract all the information out of the provided chat line.
         local c_cmd, c_name, c_ex1, c_ex2 = ExtractInfo( text )
         c_cmd = string.sub( c_cmd, 2 ) -- Remove comma
         
-        -- Check if a name was provided and provide hint if not.
+        -- Check if a name was provided otherwise tells player.
         if c_name == nil then ply:PrintMessage( HUD_PRINTTALK, c_cmd.." is missing a target" ) return "" end
         
-        -- Check if the Lambda exist and provide hint if not.
+        -- Check if the Lambda exist otherwise tells player.
         local lambda = FindLambda( c_name )
         if !IsValid( lambda ) then ply:PrintMessage( HUD_PRINTTALK, c_name.." is not a valid target" ) return "" end
         
-        -- Switch case. It really lightens this part.
+        -- Check if the command exist then execute it otherwise tells player.
         if ( PACommands[c_cmd] ) then PACommands[c_cmd]( lambda, ply, c_ex1, c_ex2 ) else ply:PrintMessage( HUD_PRINTTALK, c_cmd.." is not a valid command" ) end
         return ""
     end
