@@ -4,6 +4,8 @@ local random = math.random
 local VectorRand = VectorRand
 local max = math.max
 local net = net
+local colName = Color(0,255,0)
+local colText = Color(130,164,192)
 
 
 if SERVER then
@@ -93,14 +95,14 @@ local function PAGotoLambda(lambda, caller)
     caller.lambdaLastPos = caller:GetPos()
     caller:SetPos( lambda:GetPos() + ( ( caller:GetPos() - lambda:GetPos() ):Angle():Forward() ) * 100 )
 
-    PrintToChat( { Color(0,255,0), caller:GetName(), Color(130,164,192), " teleported to ", Color(0,255,0), lambda:GetLambdaName() } )
+    PrintToChat( { colName, caller:GetName(), colText, " teleported to ", colName, lambda:GetLambdaName() } )
 end
 
 
 local function PAReturnLambda(lambda, caller)
     lambda:SetPos( lambda.lambdaLastPos )
 
-    PrintToChat( { Color(0,255,0), caller:GetName(), Color(130,164,192), " returned ", Color(0,255,0), lambda:GetLambdaName(), Color(130,164,192), " back to their original position" } )
+    PrintToChat( { colName, caller:GetName(), colText, " returned ", colName, lambda:GetLambdaName(), colText, " back to their original position" } )
 end
 
 
@@ -109,7 +111,7 @@ local function PABringLambda(lambda, caller)
     lambda.CurNoclipPos = caller:GetEyeTrace().HitPos
     lambda:SetPos( caller:GetPos() + caller:GetForward()*100 )
 
-    PrintToChat( { Color(0,255,0), caller:GetName(), Color(130,164,192), " brought ", Color(0,255,0), lambda:GetLambdaName(), Color(130,164,192)," to themselves" } )
+    PrintToChat( { colName, caller:GetName(), colText, " brought ", colName, lambda:GetLambdaName(), colText," to themselves" } )
 end
 
 
@@ -120,7 +122,7 @@ local function PASlayLambda(lambda, caller)
     dmginfo:SetInflictor( lambda )
     lambda:LambdaOnKilled( dmginfo ) -- Could just use TakeDamage but I find this funny
 
-    PrintToChat( { Color(0,255,0), caller:GetName(), Color(130,164,192), " slayed ", Color(0,255,0), lambda:GetLambdaName() } )
+    PrintToChat( { colName, caller:GetName(), colText, " slayed ", colName, lambda:GetLambdaName() } )
 end
 
 
@@ -131,14 +133,14 @@ local function PAKickLambda(lambda, caller, reason)
 
     lambda:Remove()
 
-    PrintToChat( { Color(0,255,0), caller:GetName(), Color(130,164,192), " kicked ", Color(0,255,0), lambda:GetLambdaName(), " ", Color(130,164,192), "(", Color(0,255,0), reason, Color(130,164,192) ,")" } )
+    PrintToChat( { colName, caller:GetName(), colText, " kicked ", colName, lambda:GetLambdaName(), " ", colText, "(", colName, reason, colText ,")" } )
 end
 
 
 local function PAClearentsLambda(lambda, caller)
     lambda:CleanSpawnedEntities()
 
-    PrintToChat( { Color(0,255,0), caller:GetName(), Color(130,164,192), " cleared ", Color(0,255,0), lambda:GetLambdaName(), Color(130,164,192), " entities" } )
+    PrintToChat( { colName, caller:GetName(), colText, " cleared ", colName, lambda:GetLambdaName(), colText, " entities" } )
 end
 
 
@@ -147,14 +149,14 @@ local function PAIgniteLambda(lambda, caller, length)
 
     lambda:Ignite(length)
     
-    PrintToChat( { Color(0,255,0), caller:GetName(), Color(130,164,192), " set ", Color(0,255,0), lambda:GetLambdaName(), " on fire for ", Color(0,255,0), tostring(length), " seconds" } )
+    PrintToChat( { colName, caller:GetName(), colText, " set ", colName, lambda:GetLambdaName(), " on fire for ", colName, tostring(length), " seconds" } )
 end
 
 
 local function PAExtinguishLambda(lambda, caller)
     lambda:Extinguish()
     
-    PrintToChat( { Color(0,255,0), caller:GetName(), Color(130,164,192), " extinguished ", Color(0,255,0), lambda:GetLambdaName()} )
+    PrintToChat( { colName, caller:GetName(), colText, " extinguished ", colName, lambda:GetLambdaName()} )
 end
 
 
@@ -164,7 +166,7 @@ local function PASlapLambda(lambda, caller, damage)
 
     local direction = Vector( random( 50 )-25, random( 50 )-25, random( 50 ) ) -- Make it random, slightly biased to go up.
 
-    PrintToChat( { Color(0,255,0), caller:GetName(), Color(130,164,192)," slapped ", Color(0,255,0), lambda:GetLambdaName(), Color(130,164,192), " with ", Color(0,255,0), tostring(damage), Color(130,164,192), " damage" } )
+    PrintToChat( { colName, caller:GetName(), colText," slapped ", colName, lambda:GetLambdaName(), colText, " with ", colName, tostring(damage), colText, " damage" } )
 
     if !lambda:IsInNoClip() then
         lambda.loco:Jump()
@@ -191,7 +193,7 @@ local function PAWhipLambda(lambda, caller, damage, times)
         lambda:TakeDamage( damage, lambda, lambda )
     end)
 
-    PrintToChat( { Color(0,255,0), caller:GetName(), Color(130,164,192), " whipped ", Color(0,255,0), lambda:GetLambdaName(), " ", tostring(times), Color(130,164,192), " times with ", Color(0,255,0), tostring(damage), Color(130,164,192), " damage" } )
+    PrintToChat( { colName, caller:GetName(), colText, " whipped ", colName, lambda:GetLambdaName(), " ", tostring(times), colText, " times with ", colName, tostring(damage), colText, " damage" } )
 end
 
 local function PASetHealthLambda(lambda, caller, amount)
@@ -201,7 +203,7 @@ local function PASetHealthLambda(lambda, caller, amount)
         lambda:SetHealth(amount)
     end
 
-    PrintToChat( { Color(0,255,0), caller:GetName(), Color(130,164,192)," set ", Color(0,255,0), lambda:GetLambdaName(), Color(130,164,192), " health to ", Color(0,255,0), tostring(amount) } )
+    PrintToChat( { colName, caller:GetName(), colText," set ", colName, lambda:GetLambdaName(), colText, " health to ", colName, tostring(amount) } )
 end
 
 
@@ -210,7 +212,7 @@ local function PASetArmorLambda(lambda, caller, amount)
 
     lambda:SetArmor( amount )
 
-    PrintToChat( { Color(0,255,0), caller:GetName(), Color(130,164,192)," set ", Color(0,255,0), lambda:GetLambdaName(), Color(130,164,192), " armor to ", Color(0,255,0), tostring(amount) } )
+    PrintToChat( { colName, caller:GetName(), colText," set ", colName, lambda:GetLambdaName(), colText, " armor to ", colName, tostring(amount) } )
 end
 
 
