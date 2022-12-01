@@ -213,11 +213,11 @@ net.Receive("lambdaplyadmin_scoreboardaction", function()
 
     -- meh
     if cmd == "slay" then
-        SlayLambda( lambda, ply )
+        PASlayLambda( lambda, ply )
     elseif cmd == "kick" then
-        KickLambda( lambda, ply )
+        PAKickLambda( lambda, ply )
     elseif cmd == "clearents" then
-        ClearentsLambda( lambda, ply )
+        PAClearentsLambda( lambda, ply )
     end
 
 end)
@@ -269,7 +269,7 @@ hook.Add( "PlayerSay", "lambdaplyadminPlayerSay", function( ply, text )
         if txtcmd == ",return" then
             if !lambda.lambdaLastPos then ply:PrintMessage( HUD_PRINTTALK, txtname.." can't be returned" ) return end
             
-            ReturnLambda( lambda, ply )
+            PAReturnLambda( lambda, ply )
 
             return ""
         end
@@ -277,7 +277,7 @@ hook.Add( "PlayerSay", "lambdaplyadminPlayerSay", function( ply, text )
         -- Kill a Lambda for evil pleasure
         -- ,slay [target]
         if txtcmd == ",slay" then
-            SlayLambda( lambda, ply )
+            PASlayLambda( lambda, ply )
             
             return ""
         end
@@ -285,7 +285,7 @@ hook.Add( "PlayerSay", "lambdaplyadminPlayerSay", function( ply, text )
         -- Clear a Lambda's entities
         -- ,clearent [target]
         if txtcmd == ",clearents" then
-            ClearentsLambda(lambda, ply)
+            PAClearentsLambda(lambda, ply)
 
             return ""
         end
@@ -293,7 +293,7 @@ hook.Add( "PlayerSay", "lambdaplyadminPlayerSay", function( ply, text )
         -- Remove a Lambda from the game
         -- ,kick [target] [reason] // Reason defaults to "No reason provided."
         if txtcmd == ",kick" then
-            KickLambda(lambda, ply, txtextra)
+            PAKickLambda(lambda, ply, txtextra)
 
             return ""
         end
@@ -301,7 +301,7 @@ hook.Add( "PlayerSay", "lambdaplyadminPlayerSay", function( ply, text )
         -- Slaps a Lambda
         -- ,slap [target] [damage] // Damage defaults to 0
         if txtcmd == ",slap" then
-            SlapLambda(lambda, ply, txtextra)
+            PASlapLambda(lambda, ply, txtextra)
 
             return ""
         end
@@ -309,7 +309,7 @@ hook.Add( "PlayerSay", "lambdaplyadminPlayerSay", function( ply, text )
         -- Sets a Lambda on fire, you monster
         -- ,ignite [target] [time] // Time defaults to 10
         if txtcmd == ",ignite" then
-            IgniteLambda(lambda, ply, txtextra)
+            PAIgniteLambda(lambda, ply, txtextra)
 
             return ""
         end
@@ -318,7 +318,7 @@ hook.Add( "PlayerSay", "lambdaplyadminPlayerSay", function( ply, text )
         -- ,extinguish [target]
         if txtcmd == ",extinguish" then
             if !lambda:IsOnfire() then ply:PrintMessage( HUD_PRINTTALK, lambda:GetLambdaName().." is not on fire" ) return "" end
-            ExtinguishLambda(lambda, ply)
+            PAExtinguishLambda(lambda, ply)
 
             return ""
         end
@@ -327,7 +327,7 @@ hook.Add( "PlayerSay", "lambdaplyadminPlayerSay", function( ply, text )
         -- ,sethealth [target] [amount] // Amount defaults to 0
         if txtcmd == ",sethealth" then
             txtextra = tonumber(txtextra) or 0
-            SetHealthLambda(lambda, ply, txtextra)
+            PASetHealthLambda(lambda, ply, txtextra)
 
             return ""
         end
@@ -336,7 +336,7 @@ hook.Add( "PlayerSay", "lambdaplyadminPlayerSay", function( ply, text )
         -- ,setarmor [target] [amount] // Amount defaults to 0
         if txtcmd == ",setarmor" then
             txtextra = tonumber(txtextra) or 0
-            SetArmorLambda(lambda, ply, txtextra)
+            PASetArmorLambda(lambda, ply, txtextra)
 
             return ""
         end
