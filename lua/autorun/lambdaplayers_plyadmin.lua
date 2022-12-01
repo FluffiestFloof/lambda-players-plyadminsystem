@@ -4,13 +4,26 @@ local random = math.random
 local VectorRand = VectorRand
 local net = net
 
+
+-- Helper function to find if a Lambda with that name exist
 local function FindLambda( name )
-    if !name then return end
     local lambdas = ents.FindByClass("npc_lambdaplayer")
-    local found
+    local found = false
+
+    -- Tries to find a lambda with the full name
+    for k, v in ipairs( GetLambdaPlayers() ) do
+        if string.lower(v:GetLambdaName()) == string.lower(name) then found = v end
+    end
+
+    -- If fails to find a lambda with the full name, tries to find the name somewhere in the Lambdas name.
+    if !found then
+        for k, v in ipairs( GetLambdaPlayers() ) do
+            if string.match( string.lower(v:GetLambdaName()), string.lower(name) ) then found = v end
+        end
+    end
 
     for k, v in ipairs( GetLambdaPlayers() ) do
-        if v:GetLambdaName() == name then found = v end
+        if string.match( string.lower(v:GetLambdaName()), string.lower(name) ) then found = v end
     end
 
     return found
@@ -35,7 +48,7 @@ local function ExtractInfo( s )
         if not buf then 
             clearword = string.gsub(str, spat,"")
             clearword = string.gsub(clearword, epat,"")
-            print( i, clearword )
+            --print( "DEBUG: ", i, clearword )
             info[i] = clearword
             i = i + 1
         end
@@ -63,17 +76,15 @@ if SERVER then
     end
 
     local function ReturnLambda(lambda, caller)
-        if lambda.lambdaLastPos then
-            local name = lambda:GetLambdaName()
+        local name = lambda:GetLambdaName()
 
-            if lambda:IsPlayer() then
-                name = "Yourself"
-            end
-
-            lambda:SetPos( lambda.lambdaLastPos )
-
-            PrintToChat( { Color(0,255,0), "You", Color(130,164,192), " returned ", Color(0,255,0), name, Color(130,164,192), " back to their original position" } )
+        if lambda:IsPlayer() then
+            name = "Yourself"
         end
+
+        lambda:SetPos( lambda.lambdaLastPos )
+
+        PrintToChat( { Color(0,255,0), "You", Color(130,164,192), " returned ", Color(0,255,0), name, Color(130,164,192), " back to their original position" } )
     end
 
     local function BringLambda(lambda, caller)
@@ -104,55 +115,41 @@ if SERVER then
         PrintToChat( { Color(0,255,0), caller:GetName(), Color(130,164,192), " kicked ", Color(0,255,0), lambda:GetLambdaName(), " ", Color(130,164,192), "(", Color(0,255,0), reason, Color(130,164,192) ,")" } )
     end
 
+    local function ClearentsLambda(lambda, caller)
+        lambda:CleanSpawnedEntities()
+
+        PrintToChat( { Color(0,255,0), caller:GetName(), Color(130,164,192), " cleared ", Color(0,255,0), lambda:GetLambdaName(), " ", Color(130,164,192), " entities", } )
+    end
+
+
+    local slapSounds = {
+        "physics/body/body_medium_impact_hard1.wav",
+        "physics/body/body_medium_impact_hard2.wav",
+        "physics/body/body_medium_impact_hard3.wav",
+        "physics/body/body_medium_impact_hard5.wav",
+        "physics/body/body_medium_impact_hard6.wav",
+        "physics/body/body_medium_impact_soft5.wav",
+        "physics/body/body_medium_impact_soft6.wav",
+        "physics/body/body_medium_impact_soft7.wav",
+    }
+
+    local function SlapLambda(lambda, caller, damage)
+        damage = tonumber(damage) or 0 -- Prevent player from inputing a name and then posting about lua errors :)
+
+        local direction = Vector( random( 50 )-25, random( 50 )-25, random( 50 )-10 ) -- Make it random, slightly biased to go up.
+
+        PrintToChat( { Color(0,255,0), caller:GetName(), Color(130,164,192)," slapped ", Color(0,255,0), lambda:GetLambdaName(), Color(130,164,192), " with ", Color(0,255,0), tostring(damage), Color(130,164,192), " damage" } )
+
+        if !lambda:IsInNoClip() then
+            lambda.loco:Jump()
+            lambda.loco:SetVelocity(direction * damage)
+        end
+
+        lambda:EmitSound( slapSounds[ random(#slapSounds) ], 65 )
+        lambda:TakeDamage( damage, lambda, lambda )
+    end
+
     --[[
-    local function PlayerBanZeta(zeta,caller,reason,time)
-        local length = time or 60
-        if reason == "" or !reason then
-            reason = "No reason provided."
-        end
-        if GetConVar("zetaplayer_adminprintecho"):GetBool() then
-            local name = zeta.zetaname
-
-
-            net.Start("zeta_sendcoloredtext",true)
-            net.WriteString(util.TableToJSON({Color(0,255,0),caller:GetName(),Color(130,164,192)," banned ",Color(0,255,0),name,Color(130,164,192)," for ",Color(0,255,0),tostring(length),Color(130,164,192)," second(s) ",Color(130,164,192),"(",Color(0,255,0),reason,Color(130,164,192),")"}))
-            net.Broadcast()
-        end
-        if zeta.IsJailed then
-            RemoveJailOnEnt(zeta)
-        end
-        local id = zeta:GetCreationID()
-        _bannedzetas[id] = zeta.zetaname
-        timer.Simple(length,function()
-            _bannedzetas[id] = nil
-        end)
-        if IsValid(zeta.Spawner) then
-            zeta.Spawner:Remove()
-        end
-        zeta:Remove()
-    end
-
-    local function PlayerslapZeta(ent,caller,damage)
-        damage = tonumber(damage) or 0 -- Prevent player from slapping a Zeta with another Zeta
-        if GetConVar("zetaplayer_adminprintecho"):GetBool() then
-
-            local name = ent.zetaname
-
-            net.Start("zeta_sendcoloredtext",true)
-            net.WriteString(util.TableToJSON({Color(0,255,0),caller:GetName(),Color(130,164,192)," slapped ",Color(0,255,0),name,Color(130,164,192)," with ",Color(0,255,0),tostring(damage),Color(130,164,192)," damage"}))
-            net.Broadcast()
-        end
-        if ent.IsZetaPlayer then
-            ent.IsJumping = true 
-            ent:SetLastActivity(ent:GetActivity())
-            ent.loco:Jump()
-            ent.loco:SetVelocity(VectorRand(-1000,1000))
-        end
-        ent:EmitSound("physics/body/body_medium_impact_hard"..math.random(1,6)..".wav",65)
-        ent:TakeDamage(damage,caller,caller)
-    end
-
-
     local function PlayerWhipZeta(ent,caller,damage,times)
         damage = tonumber(damage) or 0
         times = tonumber(times) or 1
@@ -293,26 +290,29 @@ if SERVER then
         local txtcmd, txtname, txtextra = ExtractInfo( text )
         
         --Put all the checks here, we always need a target anyway
-        if txtname == nil then ply:PrintMessage( HUD_PRINTTALK, txtcmd.." is missing a target" ) return end
+        if txtname == nil then ply:PrintMessage( HUD_PRINTTALK, txtcmd.." is missing a target" ) return "" end
         
         local lambda = FindLambda( txtname )
-        if !IsValid( lambda ) then ply:PrintMessage( HUD_PRINTTALK, txtname.." is not a valid target" ) return end
+        if !IsValid( lambda ) then ply:PrintMessage( HUD_PRINTTALK, txtname.." is not a valid target" ) return "" end
 
-        -- Goto Target
+        -- Makes Player go to a Lambda
+        -- ,goto [target]
         if txtcmd == ",goto" then
             GotoLambda( lambda, ply )
 
             return ""
         end
 
-        -- Bring Target
+        -- Makes Lambda go to Player
+        -- ,bring [target]
         if txtcmd == ",bring" then
             BringLambda(lambda,ply)
 
             return ""
         end
 
-        -- Return Target
+        -- Return Lambda to previous position after teleportation
+        -- ,return [target]
         if txtcmd == ",return" then
             if !lambda.lambdaLastPos then ply:PrintMessage( HUD_PRINTTALK, txtname.." can't be returned" ) return end
             
@@ -321,16 +321,32 @@ if SERVER then
             return ""
         end
 
-        -- Slay Target
+        -- Kill a Lambda for evil pleasure
+        -- ,slay [target]
         if txtcmd == ",slay" then
             SlayLambda( lambda, ply )
             
             return ""
         end
+
+        -- Clear a Lambda's entities
+        -- ,clearent [target]
+        if txtcmd == ",clearents" then
+            ClearentsLambda(lambda, ply)
+
+            return ""
+        end
         
-        -- Kick Target Reason
+        -- Remove a Lambda from the game
+        -- ,kick [target] [reason]
         if txtcmd == ",kick" then
             KickLambda(lambda, ply, txtextra)
+
+            return ""
+        end
+
+        if txtcmd == ",slap" then
+            SlapLambda(lambda, ply, txtextra)
 
             return ""
         end
