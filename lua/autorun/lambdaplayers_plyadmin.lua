@@ -91,129 +91,159 @@ end
 
 
 
-local function PAGotoLambda(lambda, caller)
-    caller.lambdaLastPos = caller:GetPos()
-    caller:SetPos( lambda:GetPos() + ( ( caller:GetPos() - lambda:GetPos() ):Angle():Forward() ) * 100 )
-
-    PrintToChat( { colName, caller:GetName(), colText, " teleported to ", colName, lambda:GetLambdaName() } )
-end
-
-
-local function PAReturnLambda(lambda, caller)
-    lambda:SetPos( lambda.lambdaLastPos )
-
-    PrintToChat( { colName, caller:GetName(), colText, " returned ", colName, lambda:GetLambdaName(), colText, " back to their original position" } )
-end
-
-
-local function PABringLambda(lambda, caller)
-    lambda.lambdaLastPos = lambda:GetPos()
-    lambda.CurNoclipPos = caller:GetEyeTrace().HitPos
-    lambda:SetPos( caller:GetPos() + caller:GetForward()*100 )
-
-    PrintToChat( { colName, caller:GetName(), colText, " brought ", colName, lambda:GetLambdaName(), colText," to themselves" } )
-end
-
-
-local function PASlayLambda(lambda, caller)        
-    local dmginfo = DamageInfo()
-    dmginfo:SetDamage( 0 )
-    dmginfo:SetAttacker( lambda )
-    dmginfo:SetInflictor( lambda )
-    lambda:LambdaOnKilled( dmginfo ) -- Could just use TakeDamage but I find this funny
-
-    PrintToChat( { colName, caller:GetName(), colText, " slayed ", colName, lambda:GetLambdaName() } )
-end
-
-
-local function PAKickLambda(lambda, caller, reason)
-    if reason == "" or !reason then
-        reason = "No reason provided."
-    end
-
-    lambda:Remove()
-
-    PrintToChat( { colName, caller:GetName(), colText, " kicked ", colName, lambda:GetLambdaName(), " ", colText, "(", colName, reason, colText ,")" } )
-end
-
-
-local function PAClearentsLambda(lambda, caller)
-    lambda:CleanSpawnedEntities()
-
-    PrintToChat( { colName, caller:GetName(), colText, " cleared ", colName, lambda:GetLambdaName(), colText, " entities" } )
-end
-
-
-local function PAIgniteLambda(lambda, caller, length)
-    length = tonumber(length) or 10
-
-    lambda:Ignite(length)
-    
-    PrintToChat( { colName, caller:GetName(), colText, " set ", colName, lambda:GetLambdaName(), " on fire for ", colName, tostring(length), " seconds" } )
-end
-
-
-local function PAExtinguishLambda(lambda, caller)
-    lambda:Extinguish()
-    
-    PrintToChat( { colName, caller:GetName(), colText, " extinguished ", colName, lambda:GetLambdaName()} )
-end
-
-
 local slapSounds = { "physics/body/body_medium_impact_hard1.wav", "physics/body/body_medium_impact_hard2.wav", "physics/body/body_medium_impact_hard3.wav", "physics/body/body_medium_impact_hard5.wav", "physics/body/body_medium_impact_hard6.wav", "physics/body/body_medium_impact_soft5.wav", "physics/body/body_medium_impact_soft6.wav", "physics/body/body_medium_impact_soft7.wav" }
-local function PASlapLambda(lambda, caller, damage)
-    damage = tonumber(damage) or 0 -- Prevent player from inputing a name and then complaining about lua errors :)
+-- Switch case. You might not like it but this is what peak programming looks like :chad:
+local PACommands = {
+    -- Teleports the Player to the Lambda Player
+    -- ,goto [target]
+    ["goto"] = function( lambda, ply )
+        ply.lambdaLastPos = ply:GetPos()
+        ply:SetPos( lambda:GetPos() + ( ( ply:GetPos() - lambda:GetPos() ):Angle():Forward() ) * 100 )
 
-    local direction = Vector( random( 50 )-25, random( 50 )-25, random( 50 ) ) -- Make it random, slightly biased to go up.
+        PrintToChat( { colName, ply:GetName(), colText, " teleported to ", colName, lambda:GetLambdaName() } )
+    end,
 
-    PrintToChat( { colName, caller:GetName(), colText," slapped ", colName, lambda:GetLambdaName(), colText, " with ", colName, tostring(damage), colText, " damage" } )
+    -- Teleports the Lambda Player to the Player
+    -- ,bring [target]
+    ["bring"] = function( lambda, ply )
+        lambda.lambdaLastPos = lambda:GetPos()
+        lambda.CurNoclipPos = ply:GetEyeTrace().HitPos
+        lambda:SetPos( ply:GetPos() + ply:GetForward()*100 )
 
-    if !lambda:IsInNoClip() then
-        lambda.loco:Jump()
-        lambda.loco:SetVelocity( direction * ( damage + 1 ) )
-    end
+        PrintToChat( { colName, ply:GetName(), colText, " brought ", colName, lambda:GetLambdaName(), colText," to themselves" } )
+    end,
 
-    lambda:EmitSound( slapSounds[ random(#slapSounds) ], 65 )
+    -- Returns the Lambda Player to where they originally were
+    -- ,return [target]
+    ["return"] = function( lambda, ply )
+        if !lambda.lambdaLastPos then ply:PrintMessage( HUD_PRINTTALK, lambda:GetLambdaName().." can't be returned" ) return end
+    
+        lambda:SetPos( lambda.lambdaLastPos )
 
-    lambda:TakeDamage( damage, lambda, lambda )
-end
+        PrintToChat( { colName, ply:GetName(), colText, " returned ", colName, lambda:GetLambdaName(), colText, " back to their original position" } )
+    end,
 
-local function PAWhipLambda(lambda, caller, damage, times)
-    local direction = Vector( random( 50 )-25, random( 50 )-25, random( 50 ) ) -- Make it random, slightly biased to go up.
+    -- Kills the Lambda Player
+    -- ,slay [target]
+    ["slay"] = function( lambda, ply )
+        local dmginfo = DamageInfo()
+        dmginfo:SetDamage( 0 )
+        dmginfo:SetAttacker( lambda )
+        dmginfo:SetInflictor( lambda )
+        lambda:LambdaOnKilled( dmginfo ) -- Could just use TakeDamage but I find this funny
 
-    timer.Create( "lambdaplyadmin_whip_"..lambda:EntIndex(),0.5,times,function()
-        if !IsValid( lambda ) then timer.Remove( "lambdaplyadmin_whip_"..lambda:EntIndex() ) return end
+        PrintToChat( { colName, ply:GetName(), colText, " slayed ", colName, lambda:GetLambdaName() } )
+    end,
+
+    -- Removes all spawned entities of the Lambda Player
+    -- ,clearent [target]
+    ["clearents"] = function( lambda, ply )
+        lambda:CleanSpawnedEntities()
+
+        PrintToChat( { colName, ply:GetName(), colText, " cleared ", colName, lambda:GetLambdaName(), colText, " entities" } )
+    end,
+
+    -- Removes the Lambda Player from the server
+    -- ,kick [target] [reason] // Reason defaults to "No reason provided."
+    ["kick"] = function( lambda, ply, reason )
+        if reason == "" or !reason then
+            reason = "No reason provided."
+        end
+
+        lambda:Remove()
+
+        PrintToChat( { colName, ply:GetName(), colText, " kicked ", colName, lambda:GetLambdaName(), " ", colText, "(", colName, reason, colText ,")" } )
+    end,
+
+    -- Deals an amount of damage to the Lambda Player
+    -- ,slap [target] [damage] // Damage defaults to 0
+    ["slap"] = function( lambda, ply, damage )
+        damage = tonumber(damage) or 0
+
+        local direction = Vector( random( 50 )-25, random( 50 )-25, random( 50 ) ) -- Make it random, slightly biased to go up.
+
         if !lambda:IsInNoClip() then
             lambda.loco:Jump()
             lambda.loco:SetVelocity( direction * ( damage + 1 ) )
         end
-        
+
         lambda:EmitSound( slapSounds[ random(#slapSounds) ], 65 )
-        
+
         lambda:TakeDamage( damage, lambda, lambda )
-    end)
 
-    PrintToChat( { colName, caller:GetName(), colText, " whipped ", colName, lambda:GetLambdaName(), " ", tostring(times), colText, " times with ", colName, tostring(damage), colText, " damage" } )
-end
+        PrintToChat( { colName, ply:GetName(), colText," slapped ", colName, lambda:GetLambdaName(), colText, " with ", colName, tostring(damage), colText, " damage" } )
+    end,
 
-local function PASetHealthLambda(lambda, caller, amount)
-    if amount <= 0 then 
-        lambda:TakeDamage( lambda:GetMaxHealth()*5, lambda, lambda ) -- Prevent setting health to negative :)
-    else
-        lambda:SetHealth(amount)
+    -- Deals an amount of damage to the Lambda Player an amount of times
+    -- ,whip [target] [damage] [times] // damage defaults to 0, times defaults to 1
+    ["whip"] = function( lambda, ply, damage, times )
+        damage = tonumber(damage) or 0
+        times = tonumber(times) or 1
+
+        local direction = Vector( random( 50 )-25, random( 50 )-25, random( 50 ) ) -- Make it random, slightly biased to go up.
+
+        timer.Create( "lambdaplyadmin_whip_"..lambda:EntIndex(),0.5,times,function()
+            if !IsValid( lambda ) then timer.Remove( "lambdaplyadmin_whip_"..lambda:EntIndex() ) return end
+            if !lambda:IsInNoClip() then
+                lambda.loco:Jump()
+                lambda.loco:SetVelocity( direction * ( damage + 1 ) )
+            end
+            
+            lambda:EmitSound( slapSounds[ random(#slapSounds) ], 65 )
+            
+            lambda:TakeDamage( damage, lambda, lambda )
+        end)
+
+        PrintToChat( { colName, ply:GetName(), colText, " whipped ", colName, lambda:GetLambdaName(), " ", tostring(times), colText, " times with ", colName, tostring(damage), colText, " damage" } )
+    end,
+
+    -- Sets the Lambda Player on fire for an amount of time
+    -- ,ignite [target] [time] // Time defaults to 10
+    ["ignite"] = function( lambda, ply, time )
+        time = tonumber(time) or 10
+
+        lambda:Ignite(time)
+        
+        PrintToChat( { colName, ply:GetName(), colText, " set ", colName, lambda:GetLambdaName(), " on fire for ", colName, tostring(time), " seconds" } )
+    end,
+
+    -- Extinguish the Lambda Player if they are on fire
+    -- ,extinguish [target]
+    ["extinguish"] = function( lambda, ply )
+        if !lambda:IsOnfire() then ply:PrintMessage( HUD_PRINTTALK, lambda:GetLambdaName().." is not on fire" ) return "" end
+        
+        lambda:Extinguish()
+    
+        PrintToChat( { colName, plt:GetName(), colText, " extinguished ", colName, lambda:GetLambdaName()} )
+    end,
+
+    -- Sets the Lambda Player's health to the given amount
+    -- ,sethealth [target] [amount] // Amount defaults to 0
+    ["sethealth"] = function( lambda, ply, amount )
+        amount = tonumber(amount) or 0
+
+        if amount <= 0 then 
+            lambda:TakeDamage( lambda:GetMaxHealth()*5, lambda, lambda ) -- Prevent setting health to negative :)
+        else
+            lambda:SetHealth(amount)
+        end
+
+        PrintToChat( { colName, ply:GetName(), colText," set ", colName, lambda:GetLambdaName(), colText, " health to ", colName, tostring(amount) } )
+    end,
+
+    -- Sets the Lambda Player's armor to the given amount
+    -- ,setarmor [target] [amount] // Amount defaults to 0
+    ["setarmor"] = function( lambda, ply, amount )
+        amount = tonumber(amount) or 0
+
+        amount = max( 0, amount ) -- Prevent setting armor to negative
+
+        lambda:SetArmor( amount )
+
+        PrintToChat( { colName, ply:GetName(), colText," set ", colName, lambda:GetLambdaName(), colText, " armor to ", colName, tostring(amount) } )
     end
+}
 
-    PrintToChat( { colName, caller:GetName(), colText," set ", colName, lambda:GetLambdaName(), colText, " health to ", colName, tostring(amount) } )
-end
-
-
-local function PASetArmorLambda(lambda, caller, amount)
-    amount = max( 0, amount ) -- Prevent setting armor to negative
-
-    lambda:SetArmor( amount )
-
-    PrintToChat( { colName, caller:GetName(), colText," set ", colName, lambda:GetLambdaName(), colText, " armor to ", colName, tostring(amount) } )
-end
 
 
 -- -------------------------------- --
@@ -231,21 +261,7 @@ net.Receive("lambdaplyadmin_scoreboardaction", function()
     local lambda = net.ReadEntity( )
     local ply = net.ReadEntity( )
 
-    -- meh
-    if cmd == "slay" then
-        PASlayLambda( lambda, ply )
-    elseif cmd == "kick" then
-        PAKickLambda( lambda, ply )
-    elseif cmd == "clearents" then
-        PAClearentsLambda( lambda, ply )
-    elseif cmd == "goto" then
-        PAGotoLambda( lambda, ply )
-    elseif cmd == "bring" then
-        PABringLambda( lambda, ply )
-    elseif cmd == "return" then
-        PAReturnLambda( lambda, ply )
-    end
-
+    if ( PACommands[cmd] ) then PACommands[cmd]( lambda, ply ) end
 end)
 
 
@@ -264,6 +280,7 @@ hook.Add( "PlayerSay", "lambdaplyadminPlayerSay", function( ply, text )
         
         -- Extract all the information out of the provided chat line.
         local c_cmd, c_name, c_ex1, c_ex2 = ExtractInfo( text )
+        c_cmd = string.sub( c_cmd, 2 ) -- Remove comma
         
         -- Check if a name was provided and provide hint if not.
         if c_name == nil then ply:PrintMessage( HUD_PRINTTALK, c_cmd.." is missing a target" ) return "" end
@@ -271,112 +288,10 @@ hook.Add( "PlayerSay", "lambdaplyadminPlayerSay", function( ply, text )
         -- Check if the Lambda exist and provide hint if not.
         local lambda = FindLambda( c_name )
         if !IsValid( lambda ) then ply:PrintMessage( HUD_PRINTTALK, c_name.." is not a valid target" ) return "" end
-
-        -- Commands below here.
-
-        -- Makes Player go to a Lambda
-        -- ,goto [target]
-        if c_cmd == ",goto" then
-            PAGotoLambda( lambda, ply )
-
-            return ""
-        end
-
-        -- Makes Lambda go to Player
-        -- ,bring [target]
-        if c_cmd == ",bring" then
-            PABringLambda( lambda, ply )
-
-            return ""
-        end
-
-        -- Return Lambda to previous position after teleportation
-        -- ,return [target]
-        if c_cmd == ",return" then
-            if !lambda.lambdaLastPos then ply:PrintMessage( HUD_PRINTTALK, c_name.." can't be returned" ) return end
-            
-            PAReturnLambda( lambda, ply )
-
-            return ""
-        end
-
-        -- Kill a Lambda for evil pleasure
-        -- ,slay [target]
-        if c_cmd == ",slay" then
-            PASlayLambda( lambda, ply )
-            
-            return ""
-        end
-
-        -- Clear a Lambda's entities
-        -- ,clearent [target]
-        if c_cmd == ",clearents" then
-            PAClearentsLambda( lambda, ply )
-
-            return ""
-        end
         
-        -- Remove a Lambda from the game
-        -- ,kick [target] [reason] // Reason defaults to "No reason provided."
-        if c_cmd == ",kick" then
-            PAKickLambda( lambda, ply, c_ex1 )
-
-            return ""
-        end
-
-        -- Slaps a Lambda
-        -- ,slap [target] [damage] // Damage defaults to 0
-        if c_cmd == ",slap" then
-            PASlapLambda(lambda, ply, c_ex1)
-
-            return ""
-        end
-
-        -- Whips a Lambda
-        -- ,whip [target] [damage] [times] // damage defaults to 0, times defaults to 1
-        if c_cmd == ",whip" then
-            c_ex1 = tonumber(c_ex1) or 0
-            c_ex2 = tonumber(c_ex2) or 1
-            PAWhipLambda(lambda, ply, c_ex1, c_ex2)
-
-            return ""
-        end
-
-        -- Sets a Lambda on fire, you monster
-        -- ,ignite [target] [time] // Time defaults to 10
-        if c_cmd == ",ignite" then
-            PAIgniteLambda(lambda, ply, c_ex1)
-
-            return ""
-        end
-
-        -- Extinguish a Lambda
-        -- ,extinguish [target]
-        if c_cmd == ",extinguish" then
-            if !lambda:IsOnfire() then ply:PrintMessage( HUD_PRINTTALK, lambda:GetLambdaName().." is not on fire" ) return "" end
-            PAExtinguishLambda(lambda, ply)
-
-            return ""
-        end
-
-        -- Set a Lambda's Health
-        -- ,sethealth [target] [amount] // Amount defaults to 0
-        if c_cmd == ",sethealth" then
-            c_ex1 = tonumber(c_ex1) or 0
-            PASetHealthLambda(lambda, ply, c_ex1)
-
-            return ""
-        end
-
-        -- Set a Lambda's Armor
-        -- ,setarmor [target] [amount] // Amount defaults to 0
-        if c_cmd == ",setarmor" then
-            c_ex1 = tonumber(c_ex1) or 0
-            PASetArmorLambda(lambda, ply, c_ex1)
-
-            return ""
-        end
-
+        -- Switch case. It really lightens this part.
+        if ( PACommands[c_cmd] ) then PACommands[c_cmd]( lambda, ply, c_ex1, c_ex2 ) else ply:PrintMessage( HUD_PRINTTALK, c_cmd.." is not a valid command" ) end
+        return ""
     end
     
 end)
