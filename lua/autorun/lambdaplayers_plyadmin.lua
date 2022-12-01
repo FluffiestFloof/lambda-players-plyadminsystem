@@ -4,7 +4,50 @@ local random = math.random
 local VectorRand = VectorRand
 local net = net
 
-if SERVER then -- Player admin commands will be handled here
+local function FindLambda( name )
+    if !name then return end
+    local lambdas = ents.FindByClass("npc_lambdaplayer")
+    local found
+
+    for k, v in ipairs( GetLambdaPlayers() ) do
+        if v:GetLambdaName() == name then found = v end
+    end
+
+    return found
+end
+
+local function ExtractInfo( s )
+    local spat, epat, info, i, buf, quoted = [=[^(['"])]=], [=[(['"])$]=], {}, 1
+    
+    for str in string.gmatch(s, "%S+") do
+        local squoted = string.match(str, spat)
+        local equoted = string.match(str, epat)
+        local escaped = string.match(str,[=[(\*)['"]$]=])
+        local clearword
+
+        if squoted and not quoted and not equoted then
+            buf, quoted = str, squoted
+        elseif buf and equoted == quoted and #escaped % 2 == 0 then
+            str, buf, quoted = buf .. ' ' .. str, nil, nil
+        elseif buf then
+            buf = buf .. ' ' .. str
+        end
+        if not buf then 
+            clearword = string.gsub(str, spat,"")
+            clearword = string.gsub(clearword, epat,"")
+            print( i, clearword )
+            info[i] = clearword
+            i = i + 1
+        end
+    end
+    --[[if buf then
+        print("DEBUG: Missing matching quote for "..buf)
+    end]] -- They can figure it out themselves.
+
+    return info[1], info[2], info[3] --Only returns the command and two extras. Anything else is voided because who cares
+end
+
+if SERVER then
     
     local function GotoLambda(lambda, caller)
         net.Start( "lambdaplyadmin_chatprint", true )
@@ -250,70 +293,55 @@ if SERVER then -- Player admin commands will be handled here
     end ]]
 
     hook.Add( "PlayerSay", "lambdaplyadminPlayerSay", function( ply, text )
-        local split = string.Explode(" ",text)
+        if !string.sub(text, 1, 1) == "," then return end
+        local txtcmd, txtname, txtextra = ExtractInfo( text )
+        
+        --Put all the checks here, we always need a target anyway
+        if txtname == nil then ply:PrintMessage( HUD_PRINTTALK, txtcmd.." is missing a target" ) return end
+        
+        local lambda = FindLambda( txtname )
+        if !IsValid( lambda ) then ply:PrintMessage( HUD_PRINTTALK, txtname.." is not a valid target" ) return end
 
-        if split[1] == ",goto" then
-            if split[2]==nil then ply:PrintMessage( HUD_PRINTTALK, split[1].." is missing a target") return "" end
-            local name = split[2]
-
-            local lambda = FindLambda( name )
-            if !IsValid(zeta) then ply:PrintMessage(HUD_PRINTTALK,name.." is not valid") return "" end
-
+        -- Goto Target
+        if txtcmd == ",goto" then
             GotoLambda( lambda, ply )
+            
             return ""
         end
 
-        if split[1] == ",bring" then
-            if split[2]==nil then ply:PrintMessage(HUD_PRINTTALK,split[1].." is missing a target") return "" end
-            local name = split[2]
-
-            local lambda = FindLambda(name)
-            if !IsValid(lambda) then ply:PrintMessage(HUD_PRINTTALK,name.." is not valid") return "" end
-
+        -- Bring Target
+        if txtcmd == ",bring" then
             BringLambda(lambda,ply)
+
             return ""
         end
 
-        if split[1] == ",return" then
-            if split[2]==nil then ply:PrintMessage(HUD_PRINTTALK,split[1].." is missing a target") return "" end
-            local name = split[2]
-
-            local lambda = FindLambda(name)
-            if !IsValid(lambda) then ply:PrintMessage(HUD_PRINTTALK,name.." is not valid") return "" end
-            if !lambda.lambdaLastPos then ply:PrintMessage(HUD_PRINTTALK,name.." can't be returned") return "" end
+        -- Return Target
+        if txtcmd == ",return" then
+            if !lambda.lambdaLastPos then ply:PrintMessage( HUD_PRINTTALK, txtname.." can't be returned" ) return end
             
             ReturnLambda( lambda, ply )
+
             return ""
         end
 
-        if split[1] == ",slay" then
-            if split[2]==nil then ply:PrintMessage(HUD_PRINTTALK,split[1].." is missing a target") return "" end
-            local name = split[2]
-
-            local lambda = FindLambda(name)
-            if !IsValid(lambda) then ply:PrintMessage(HUD_PRINTTALK,name.." is not valid") return "" end
-
+        -- Slay Target
+        if txtcmd == ",slay" then
             SlayLambda( lambda, ply )
+            
             return ""
         end
         
-        if split[1] == ",kick" then
-            if split[2]==nil then ply:PrintMessage(HUD_PRINTTALK,split[1].." is missing a target") return "" end
-            local name = split[2]
+        -- Kick Target Reason
+        if txtcmd == ",kick" then
+            KickLambda(lambda, ply, txtextra)
 
-            local lambda = FindLambda( name )
-             if !IsValid(lambda) then ply:PrintMessage( HUD_PRINTTALK, name.." is not valid") return "" end
-
-            local reason = string.Replace( text, name )
-            reason = string.Replace(reason, ",kick ", "")
-
-            KickLambda(lambda, ply, reason)
             return ""
         end
 
         --[[
-        if split[1] == ",ban" then
-            if split[2]==nil then ply:PrintMessage(HUD_PRINTTALK,split[1].." is missing a target") return "" end
+        if txtcmd == ",ban" then
+            
             local reason = ""
             local time 
             local name 
@@ -335,9 +363,8 @@ if SERVER then -- Player admin commands will be handled here
             return ""
         end
 
-        if split[1] == ",slap" then
-            if split[2]==nil then ply:PrintMessage(HUD_PRINTTALK,split[1].." is missing a target") return "" end
-            local name = split[2]
+        if txtcmd == ",slap" then
+            
             local dmg = split[3] or 0
             local zeta = FindZetaByName(name)
 
@@ -347,9 +374,8 @@ if SERVER then -- Player admin commands will be handled here
             return ""
         end
 
-        if split[1] == ",whip" then
-            if split[2]==nil then ply:PrintMessage(HUD_PRINTTALK,split[1].." is missing a target") return "" end
-            local name = split[2]
+        if txtcmd == ",whip" then
+            
             local dmg = split[3] or 0
             local times = split[4] or 10
 
@@ -361,9 +387,8 @@ if SERVER then -- Player admin commands will be handled here
             return ""
         end
 
-        if split[1] == ",ignite" then
-            if split[2]==nil then ply:PrintMessage(HUD_PRINTTALK,split[1].." is missing a target") return "" end
-            local name = split[2]
+        if txtcmd == ",ignite" then
+            
             local length = split[3] or 5
             local zeta = FindZetaByName(name)
 
@@ -373,9 +398,8 @@ if SERVER then -- Player admin commands will be handled here
             return ""
         end
 
-        if split[1] == ",sethealth" then
-            if split[2]==nil then ply:PrintMessage(HUD_PRINTTALK,split[1].." is missing a target") return "" end
-            local name = split[2]
+        if txtcmd == ",sethealth" then
+            
             local hp = split[3] or 100
             local zeta = FindZetaByName(name)
 
@@ -385,9 +409,8 @@ if SERVER then -- Player admin commands will be handled here
             return ""
         end
 
-        if split[1] == ",setarmor" then
-            if split[2]==nil then ply:PrintMessage(HUD_PRINTTALK,split[1].." is missing a target") return "" end
-            local name = split[2]
+        if txtcmd == ",setarmor" then
+            
             local armor = split[3] or 0
             local zeta = FindZetaByName(name)
 
@@ -397,9 +420,8 @@ if SERVER then -- Player admin commands will be handled here
             return ""
         end
 
-        if split[1] == ",god" then
-            if split[2]==nil then ply:PrintMessage(HUD_PRINTTALK,split[1].." is missing a target") return "" end
-            local name = split[2]
+        if txtcmd == ",god" then
+            
             local zeta = FindZetaByName(name)
 
             if !IsValid(zeta) then ply:PrintMessage(HUD_PRINTTALK,name.." is not valid") return "" end
@@ -409,9 +431,8 @@ if SERVER then -- Player admin commands will be handled here
             return ""
         end
 
-        if split[1] == ",ungod" then
-            if split[2]==nil then ply:PrintMessage(HUD_PRINTTALK,split[1].." is missing a target") return "" end
-            local name = split[2]
+        if txtcmd == ",ungod" then
+            
             local zeta = FindZetaByName(name)
 
             if !IsValid(zeta) then ply:PrintMessage(HUD_PRINTTALK,name.." is not valid") return "" end
@@ -421,9 +442,8 @@ if SERVER then -- Player admin commands will be handled here
             return ""
         end
 
-        if split[1] == ",jail" then
-            if split[2]==nil then ply:PrintMessage(HUD_PRINTTALK,split[1].." is missing a target") return "" end
-            local name = split[2]
+        if txtcmd == ",jail" then
+            
             local zeta = FindZetaByName(name)
 
             if !IsValid(zeta) then ply:PrintMessage(HUD_PRINTTALK,name.." is not valid") return "" end
@@ -433,9 +453,8 @@ if SERVER then -- Player admin commands will be handled here
             return ""
         end
 
-        if split[1] == ",tpjail" then
-            if split[2]==nil then ply:PrintMessage(HUD_PRINTTALK,split[1].." is missing a target") return "" end
-            local name = split[2]
+        if txtcmd == ",tpjail" then
+            
             local zeta = FindZetaByName(name)
 
             if !IsValid(zeta) then ply:PrintMessage(HUD_PRINTTALK,name.." is not valid") return "" end
@@ -445,9 +464,8 @@ if SERVER then -- Player admin commands will be handled here
             return ""
         end
         
-        if split[1] == ",unjail" then
-            if split[2]==nil then ply:PrintMessage(HUD_PRINTTALK,split[1].." is missing a target") return "" end
-            local name = split[2]
+        if txtcmd == ",unjail" then
+            
             local zeta = FindZetaByName(name)
 
             if !IsValid(zeta) then ply:PrintMessage(HUD_PRINTTALK,name.." is not valid") return "" end
