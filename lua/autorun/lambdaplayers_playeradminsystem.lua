@@ -116,7 +116,7 @@ local PAScmds = {
     -- Teleports the Player to the Lambda Player
     -- ,goto [target]
     ["goto"] = function( lambda, ply )
-        ply.lambdaLastPos = ply:GetPos()
+        --ply.lambdaLastPos = ply:GetPos()
         ply:SetPos( lambda:GetPos() + ( ( ply:GetPos() - lambda:GetPos() ):Angle():Forward() ) * 100 )
 
         PrintToChat( { colName, ply:GetName(), colText, " teleported to ", colName, lambda:GetLambdaName() } )
@@ -142,6 +142,32 @@ local PAScmds = {
         PrintToChat( { colName, ply:GetName(), colText, " returned ", colName, lambda:GetLambdaName(), colText, " back to their original position" } )
     end,
 
+    -- Removes all spawned entities of the Lambda Player
+    -- ,clearents [target]
+    ["clearents"] = function( lambda, ply )
+        lambda:CleanSpawnedEntities()
+
+        PrintToChat( { colName, ply:GetName(), colText, " cleared ", colName, lambda:GetLambdaName(), colText, " entities" } )
+    end,
+
+    -- Stops the Lambda Player from being able to use text chat
+    -- ,gag [target]
+    --[[["gag"] = function( lambda, ply )
+        lambda:Hook( "LambdaPlayerSay", "lambdaplayers_pas_gag", function( lambda, text )
+            return "" -- Stop them from talking
+        end, true)
+
+        PrintToChat( { colName, ply:GetName(), colText, " gagged ", colName, lambda:GetLambdaName() } )
+    end,]]
+
+    -- Restores the Lambda Player ability from using text chat
+    -- ,ungag [target]
+    --[[["ungag"] = function( lambda, ply )
+        lambda:RemoveHook( "LambdaPlayerSay", "lambdaplayers_pas_ungag" )
+
+        PrintToChat( { colName, ply:GetName(), colText, " ungagged ", colName, lambda:GetLambdaName() } )
+    end,]]
+
     -- Kills the Lambda Player
     -- ,slay [target]
     ["slay"] = function( lambda, ply )
@@ -152,14 +178,6 @@ local PAScmds = {
         lambda:LambdaOnKilled( dmginfo ) -- Could just use TakeDamage but I find this funny
 
         PrintToChat( { colName, ply:GetName(), colText, " slayed ", colName, lambda:GetLambdaName() } )
-    end,
-
-    -- Removes all spawned entities of the Lambda Player
-    -- ,clearents [target]
-    ["clearents"] = function( lambda, ply )
-        lambda:CleanSpawnedEntities()
-
-        PrintToChat( { colName, ply:GetName(), colText, " cleared ", colName, lambda:GetLambdaName(), colText, " entities" } )
     end,
 
     -- Removes the Lambda Player from the server
