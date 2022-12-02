@@ -138,6 +138,7 @@ local PAScmds = {
         if !lambda.lambdaLastPos then ply:PrintMessage( HUD_PRINTTALK, lambda:GetLambdaName().." can't be returned" ) return end
     
         lambda:SetPos( lambda.lambdaLastPos )
+        lambda.lambdaLastPos = nil
 
         PrintToChat( { colName, ply:GetName(), colText, " returned ", colName, lambda:GetLambdaName(), colText, " back to their original position" } )
     end,
