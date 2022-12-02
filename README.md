@@ -24,7 +24,12 @@ Currently implements the following commands;
 - ,setarmor [target] [amount]
 
 Chat commands also supports incomplete names and double quotes.<br>
-Exemple, if you want to kick a Lambda Player named "Santa Claus The Almighty" you can write `,kick santa "No gift?"` and it will kick that Lambda Player with the reason "No gift?".
+To kick a Lambda Player named "Santa Claus The Almighty" you can write;
+<br>`,kick santa "No gift?"`
+<br>or<br>
+<br>`,kick "Santa Claus The Almighty" "No gift?"`<br>
+and it will kick that Lambda Player with the reason "No gift?".
+
 
 The scoreboard also has goto, bring, return, slay, clearents and kick if you right click on a Lambda's Profile Picture
 ![ss+(2022-12-01+at+10 11 52)](https://user-images.githubusercontent.com/9823203/205160170-fc5c83d2-7bcb-4135-b7de-fe67dc5ba4ec.png)

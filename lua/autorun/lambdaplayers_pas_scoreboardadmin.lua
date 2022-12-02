@@ -33,7 +33,7 @@ if CLIENT then
                 self.AvatarButton:SetSize( 32, 32 )
                 self.AvatarButton.DoClick = function() if self.Player.IsLambdaPlayer then return end self.Player:ShowProfile() end
                 self.AvatarButton.DoRightClick = function()
-                    if !self.Player.IsLambdaPlayer then return end -- While it's entirely doable, let's not have our own admin system for players.
+                    if !self.Player.IsLambdaPlayer or !GetConVar( "lambdaplayers_pas_enabled" ):GetBool() then return end -- Make sure we're clicking on a Lambda Player
                     local adminmenu = DermaMenu()
 
                     adminmenu:AddOption( "Slay " .. self.Player:Nick(), function() net.Start( "lambdaplyadmin_scoreboardaction" ) net.WriteString("slay") net.WriteEntity( self.Player ) net.WriteEntity( LocalPlayer() ) net.SendToServer() end ):SetImage( "icon16/heart_delete.png" )

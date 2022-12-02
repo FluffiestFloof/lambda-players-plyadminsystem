@@ -8,6 +8,22 @@ local colName = Color(0,255,0)
 local colText = Color(130,164,192)
 
 
+
+-- ------------- --
+-- // CONVARS // --
+-- ------------- --
+
+
+hook.Add( "LambdaOnConvarsCreated", "lambdaplayeradminsystemConvars", function()
+
+    CreateLambdaConvar( "lambdaplayers_pas_enabled", 1, true, false, false, "Enables the player administration system that allows player admin to do certain actions on Lambda Players using chat commands", 0, 1, { name = "Enable Player Admin System", type = "Bool", category = "Player Admin System" } )
+    CreateLambdaConvar( "lambdaplayers_pas_chatecho", 1, true, false, false, "If admins using commands should have their commands echo into chat", 0, 1, { name = "Enable Commands Chat Print", type = "Bool", category = "Player Admin System" } )
+    CreateLambdaConvar( "lambdaplayers_pas_cmdprefix", ",", true, false, false, "The prefix used for chat commands. This will only accept one character!", nil, nil, { type = "Text", name = "Command Prefix", category = "Player Admin System" } )
+
+end )
+
+
+
 if SERVER then
 
 
@@ -15,7 +31,6 @@ if SERVER then
 -- ---------------------- --
 -- // HELPER FUNCTIONS // --
 -- ---------------------- --
-
 
 
 -- Helper function to find if a Lambda with that name exist
@@ -79,9 +94,11 @@ end
 
 -- Helper function to lower clutter in other functions. It prints to clients chat.
 local function PrintToChat( tbl )
-    net.Start( "lambdaplyadmin_chatprint", true )
-    net.WriteString( util.TableToJSON(tbl))
-    net.Broadcast()
+    if GetConVar( "lambdaplayers_pas_chatecho" ):GetBool() then
+        net.Start( "lambdaplyadmin_chatprint", true )
+        net.WriteString( util.TableToJSON(tbl))
+        net.Broadcast()
+    end
 end
 
 
@@ -91,11 +108,10 @@ end
 -- --------------------------- --
 
 
-
 local slapSounds = { "physics/body/body_medium_impact_hard1.wav", "physics/body/body_medium_impact_hard2.wav", "physics/body/body_medium_impact_hard3.wav", "physics/body/body_medium_impact_hard5.wav", "physics/body/body_medium_impact_hard6.wav", "physics/body/body_medium_impact_soft5.wav", "physics/body/body_medium_impact_soft6.wav", "physics/body/body_medium_impact_soft7.wav" }
 
--- Table of Functions.
-local PACommands = {
+-- Table of Functions. This is where all the commands actual effects are.
+local PAScmds = {
     
     -- Teleports the Player to the Lambda Player
     -- ,goto [target]
@@ -185,8 +201,8 @@ local PACommands = {
 
         local direction = Vector( random( 50 )-25, random( 50 )-25, random( 50 ) ) -- Make it random, slightly biased to go up.
 
-        timer.Create( "lambdaplyadmin_whip_"..lambda:EntIndex(),0.5,times,function()
-            if !IsValid( lambda ) then timer.Remove( "lambdaplyadmin_whip_"..lambda:EntIndex() ) return end
+        timer.Create( "lambdaplayers_pas_whip_"..lambda:EntIndex(), 0.5, times, function()
+            if !IsValid( lambda ) then timer.Remove( "lambdaplayers_pas_whip_"..lambda:EntIndex() ) return end
             
             if !lambda:IsInNoClip() then
                 lambda.loco:Jump()
@@ -255,7 +271,6 @@ local PACommands = {
 -- -------------------------------- --
 
 
-
 -- Deal with the scoreboard admin clicky click things
 util.AddNetworkString("lambdaplyadmin_scoreboardaction")
 
@@ -264,7 +279,7 @@ net.Receive("lambdaplyadmin_scoreboardaction", function()
     local lambda = net.ReadEntity( )
     local ply = net.ReadEntity( )
 
-    if ( PACommands[cmd] ) then PACommands[cmd]( lambda, ply ) end
+    if ( PAScmds[cmd] ) then PAScmds[cmd]( lambda, ply ) end
 end)
 
 
@@ -274,9 +289,10 @@ end)
 -- ------------------------------- --
 
 
-
 hook.Add( "PlayerSay", "lambdaplyadminPlayerSay", function( ply, text )
-    if string.StartWith(string.lower(text), ",") then -- if it doesn't look like a command, we don't care.
+    -- if it doesn't look like a command or the addon is disabled we don't care.
+    if string.StartWith( string.lower(text), GetConVar( "lambdaplayers_pas_cmdprefix" ):GetString() ) and GetConVar( "lambdaplayers_pas_enabled" ):GetBool() then
+
 
         -- Check if the one inputing the command is an admin otherwise tells player.
         if !ply:IsAdmin() then ply:PrintMessage( HUD_PRINTTALK, "You need to be an admin to use "..c_cmd ) return "" end
@@ -293,7 +309,7 @@ hook.Add( "PlayerSay", "lambdaplyadminPlayerSay", function( ply, text )
         if !IsValid( lambda ) then ply:PrintMessage( HUD_PRINTTALK, c_name.." is not a valid target" ) return "" end
         
         -- Check if the command exist then execute it otherwise tells player.
-        if ( PACommands[c_cmd] ) then PACommands[c_cmd]( lambda, ply, c_ex1, c_ex2 ) else ply:PrintMessage( HUD_PRINTTALK, c_cmd.." is not a valid command" ) end
+        if ( PAScmds[c_cmd] ) then PAScmds[c_cmd]( lambda, ply, c_ex1, c_ex2 ) else ply:PrintMessage( HUD_PRINTTALK, c_cmd.." is not a valid command" ) end
         return ""
     end
     
