@@ -26,10 +26,13 @@ Currently implements the following commands;
 Chat commands also supports incomplete names and double quotes.<br>
 To kick a Lambda Player named "Santa Claus The Almighty" you can write;
 <br>`,kick santa "No gift?"`
-<br>or<br>
+<br>or
 <br>`,kick "Santa Claus The Almighty" "No gift?"`<br>
 and it will kick that Lambda Player with the reason "No gift?".
 
 
-The scoreboard also has goto, bring, return, slay, clearents and kick if you right click on a Lambda's Profile Picture
-![ss+(2022-12-01+at+10 11 52)](https://user-images.githubusercontent.com/9823203/205160170-fc5c83d2-7bcb-4135-b7de-fe67dc5ba4ec.png)
+### The scoreboard also has a couple of actions if you right click on a Lambda's Profile Picture<br>
+![ss (2022-12-02 at 01 08 07)](https://user-images.githubusercontent.com/9823203/205289698-f431d894-bc59-44b9-bd2b-fecf7971e16b.png)
+
+### All Settings are located under Player Admin System<br>
+![ss (2022-12-02 at 01 07 46)](https://user-images.githubusercontent.com/9823203/205289721-16ecd122-6bcd-4baf-b785-803b84583285.png)
