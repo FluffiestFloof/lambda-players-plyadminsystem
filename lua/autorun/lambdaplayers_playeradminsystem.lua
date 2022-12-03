@@ -109,6 +109,7 @@ end
 
 
 local slapSounds = { "physics/body/body_medium_impact_hard1.wav", "physics/body/body_medium_impact_hard2.wav", "physics/body/body_medium_impact_hard3.wav", "physics/body/body_medium_impact_hard5.wav", "physics/body/body_medium_impact_hard6.wav", "physics/body/body_medium_impact_soft5.wav", "physics/body/body_medium_impact_soft6.wav", "physics/body/body_medium_impact_soft7.wav" }
+local gaggedLambdas = {}
 
 -- Table of Functions. This is where all the commands actual effects are.
 local PAScmds = {
@@ -153,21 +154,29 @@ local PAScmds = {
 
     -- Stops the Lambda Player from being able to use text chat
     -- ,gag [target]
-    --[[["gag"] = function( lambda, ply )
-        lambda:Hook( "LambdaPlayerSay", "lambdaplayers_pas_gag", function( lambda, text )
-            return "" -- Stop them from talking
-        end, true)
+    ["gag"] = function( lambda, ply )
+
+        if gaggedLambdas[lambda:EntIndex()] then
+            ply:PrintMessage( HUD_PRINTTALK, lambda:GetLambdaName().." is already gagged" ) return
+        end
+
+        gaggedLambdas[lambda:EntIndex()] = true -- Add Lambda to the gaggedlambdas
 
         PrintToChat( { colName, ply:GetName(), colText, " gagged ", colName, lambda:GetLambdaName() } )
-    end,]]
+    end,
 
     -- Restores the Lambda Player ability from using text chat
     -- ,ungag [target]
-    --[[["ungag"] = function( lambda, ply )
-        lambda:RemoveHook( "LambdaPlayerSay", "lambdaplayers_pas_ungag" )
+    ["ungag"] = function( lambda, ply )
+        
+        if !gaggedLambdas[lambda:EntIndex()]  then
+            ply:PrintMessage( HUD_PRINTTALK, lambda:GetLambdaName().." is not gagged" ) return
+        end
+
+        gaggedLambdas[lambda:EntIndex()] = nil
 
         PrintToChat( { colName, ply:GetName(), colText, " ungagged ", colName, lambda:GetLambdaName() } )
-    end,]]
+    end,
 
     -- Kills the Lambda Player
     -- ,slay [target]
@@ -308,8 +317,10 @@ end)
 -- ------------------------------- --
 
 
+-- HOOK: Check player chat input for administrative commands
 hook.Add( "PlayerSay", "lambdaplyadminPlayerSay", function( ply, text )
     -- if it doesn't look like a command or the addon is disabled we don't care.
+
     if string.StartWith( string.lower(text), GetConVar( "lambdaplayers_pas_cmdprefix" ):GetString() ) and GetConVar( "lambdaplayers_pas_enabled" ):GetBool() then
 
 
@@ -332,6 +343,14 @@ hook.Add( "PlayerSay", "lambdaplyadminPlayerSay", function( ply, text )
         return ""
     end
     
+end)
+
+-- HOOK: Check if typing lambda is gagged and stop them from typing if true
+hook.Add( "LambdaPlayerSay", "lambdaplayers_pas_gag", function( lambda, text )
+    if gaggedLambdas[lambda:EntIndex()] then
+        return "" -- Stop the lambda that tried to use text from printing anything
+    end
+
 end)
 
 end
