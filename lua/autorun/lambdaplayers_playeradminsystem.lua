@@ -95,7 +95,7 @@ end
 -- Helper function to lower clutter in other functions. It prints to clients chat.
 local function PrintToChat( tbl )
     if GetConVar( "lambdaplayers_pas_chatecho" ):GetBool() then
-        net.Start( "lambdaplyadmin_chatprint", true )
+        net.Start( "lambdaplayers_pas_chatprint", true )
         net.WriteString( util.TableToJSON(tbl))
         net.Broadcast()
     end
@@ -161,6 +161,7 @@ local PAScmds = {
         end
 
         gaggedLambdas[lambda:EntIndex()] = true -- Add Lambda to the gaggedlambdas
+
 
         PrintToChat( { colName, ply:GetName(), colText, " gagged ", colName, lambda:GetLambdaName() } )
     end,
@@ -229,8 +230,8 @@ local PAScmds = {
 
         local direction = Vector( random( 50 )-25, random( 50 )-25, random( 50 ) ) -- Make it random, slightly biased to go up.
 
-        timer.Create( "lambdaplayers_pas_whip_"..lambda:EntIndex(), 0.5, times, function()
-            if !IsValid( lambda ) then timer.Remove( "lambdaplayers_pas_whip_"..lambda:EntIndex() ) return end
+        timer.Create( "lambdaplayers_pas_whip"..lambda:EntIndex(), 0.5, times, function()
+            if !IsValid( lambda ) then timer.Remove( "lambdaplayers_pas_whip"..lambda:EntIndex() ) return end
             
             if !lambda:IsInNoClip() then
                 lambda.loco:Jump()
@@ -300,9 +301,9 @@ local PAScmds = {
 
 
 -- Deal with the scoreboard admin clicky click things
-util.AddNetworkString("lambdaplyadmin_scoreboardaction")
+util.AddNetworkString("lambdaplayers_pas_scoreboardaction")
 
-net.Receive("lambdaplyadmin_scoreboardaction", function()
+net.Receive("lambdaplayers_pas_scoreboardaction", function()
     local cmd = net.ReadString()
     local lambda = net.ReadEntity( )
     local ply = net.ReadEntity( )
@@ -318,12 +319,12 @@ end)
 
 
 -- HOOK: Check player chat input for administrative commands
-hook.Add( "PlayerSay", "lambdaplyadminPlayerSay", function( ply, text )
+hook.Add( "PlayerSay", "lambdaplayers_pas_plysay", function( ply, text )
     -- if it doesn't look like a command or the addon is disabled we don't care.
 
     if string.StartWith( string.lower(text), GetConVar( "lambdaplayers_pas_cmdprefix" ):GetString() ) and GetConVar( "lambdaplayers_pas_enabled" ):GetBool() then
 
-
+        PrintTable(gaggedLambdas)
         -- Check if the one inputing the command is an admin otherwise tells player.
         if !ply:IsAdmin() then ply:PrintMessage( HUD_PRINTTALK, "You need to be an admin to use "..c_cmd ) return "" end
         
@@ -346,11 +347,18 @@ hook.Add( "PlayerSay", "lambdaplyadminPlayerSay", function( ply, text )
 end)
 
 -- HOOK: Check if typing lambda is gagged and stop them from typing if true
-hook.Add( "LambdaPlayerSay", "lambdaplayers_pas_gag", function( lambda, text )
+hook.Add( "LambdaPlayerSay", "lambdaplayers_pas_lambdasay", function( lambda, text )
     if gaggedLambdas[lambda:EntIndex()] then
         return "" -- Stop the lambda that tried to use text from printing anything
     end
 
+end)
+
+-- HOOK: Removes removed Lambdas from the gag list
+hook.Add( "LambdaOnRemove", "lambdaplayers_pas_lambdaremove", function( lambda )
+    if gaggedLambdas[lambda:EntIndex()] then
+        gaggedLambdas[lambda:EntIndex()] = nil
+    end
 end)
 
 end
