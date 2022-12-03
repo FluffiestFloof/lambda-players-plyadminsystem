@@ -36,14 +36,14 @@ if CLIENT then
                     if !self.Player.IsLambdaPlayer or !GetConVar( "lambdaplayers_pas_enabled" ):GetBool() then return end -- Make sure we're clicking on a Lambda Player
                     local adminmenu = DermaMenu()
 
-                    adminmenu:AddOption( "Slay " .. self.Player:Nick(), function() net.Start( "lambdaplyadmin_scoreboardaction" ) net.WriteString("slay") net.WriteEntity( self.Player ) net.WriteEntity( LocalPlayer() ) net.SendToServer() end ):SetImage( "icon16/heart_delete.png" )
-                    adminmenu:AddOption( "Kick " .. self.Player:Nick(), function() net.Start( "lambdaplyadmin_scoreboardaction" ) net.WriteString("kick") net.WriteEntity( self.Player ) net.WriteEntity( LocalPlayer() ) net.SendToServer() end ):SetImage( "icon16/error.png" )
+                    adminmenu:AddOption( "Slay " .. self.Player:Nick(), function() net.Start( "lambdaplayers_pas_scoreboardaction" ) net.WriteString("slay") net.WriteEntity( self.Player ) net.WriteEntity( LocalPlayer() ) net.SendToServer() end ):SetImage( "icon16/heart_delete.png" )
+                    adminmenu:AddOption( "Kick " .. self.Player:Nick(), function() net.Start( "lambdaplayers_pas_scoreboardaction" ) net.WriteString("kick") net.WriteEntity( self.Player ) net.WriteEntity( LocalPlayer() ) net.SendToServer() end ):SetImage( "icon16/error.png" )
                     adminmenu:AddSpacer()
-                    adminmenu:AddOption( "Clear " .. self.Player:Nick() .. " entities", function() net.Start( "lambdaplyadmin_scoreboardaction" ) net.WriteString("clearents") net.WriteEntity( self.Player ) net.WriteEntity( LocalPlayer() ) net.SendToServer() end ):SetImage( "icon16/world_delete.png" )
+                    adminmenu:AddOption( "Clear " .. self.Player:Nick() .. " entities", function() net.Start( "lambdaplayers_pas_scoreboardaction" ) net.WriteString("clearents") net.WriteEntity( self.Player ) net.WriteEntity( LocalPlayer() ) net.SendToServer() end ):SetImage( "icon16/world_delete.png" )
                     adminmenu:AddSpacer()
-                    adminmenu:AddOption( "Goto " .. self.Player:Nick(), function() net.Start( "lambdaplyadmin_scoreboardaction" ) net.WriteString("goto") net.WriteEntity( self.Player ) net.WriteEntity( LocalPlayer() ) net.SendToServer() end ):SetImage( "icon16/arrow_right.png" )
-                    adminmenu:AddOption( "Bring " .. self.Player:Nick(), function() net.Start( "lambdaplyadmin_scoreboardaction" ) net.WriteString("bring") net.WriteEntity( self.Player ) net.WriteEntity( LocalPlayer() ) net.SendToServer() end ):SetImage( "icon16/arrow_left.png" )
-                    adminmenu:AddOption( "Return " .. self.Player:Nick(), function() net.Start( "lambdaplyadmin_scoreboardaction" ) net.WriteString("return") net.WriteEntity( self.Player ) net.WriteEntity( LocalPlayer() ) net.SendToServer() end ):SetImage( "icon16/arrow_redo.png" )
+                    adminmenu:AddOption( "Goto " .. self.Player:Nick(), function() net.Start( "lambdaplayers_pas_scoreboardaction" ) net.WriteString("goto") net.WriteEntity( self.Player ) net.WriteEntity( LocalPlayer() ) net.SendToServer() end ):SetImage( "icon16/arrow_right.png" )
+                    adminmenu:AddOption( "Bring " .. self.Player:Nick(), function() net.Start( "lambdaplayers_pas_scoreboardaction" ) net.WriteString("bring") net.WriteEntity( self.Player ) net.WriteEntity( LocalPlayer() ) net.SendToServer() end ):SetImage( "icon16/arrow_left.png" )
+                    adminmenu:AddOption( "Return " .. self.Player:Nick(), function() net.Start( "lambdaplayers_pas_scoreboardaction" ) net.WriteString("return") net.WriteEntity( self.Player ) net.WriteEntity( LocalPlayer() ) net.SendToServer() end ):SetImage( "icon16/arrow_redo.png" )
                     
                     adminmenu:Open()
                 end
