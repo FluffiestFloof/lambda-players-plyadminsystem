@@ -35,12 +35,11 @@ if SERVER then
 
 -- Helper function to find if a Lambda with that name exist
 local function FindLambda( name )
-    local lambdas = ents.FindByClass("npc_lambdaplayer")
     local found = false
 
     -- Tries to find a lambda with the full name
     for k, v in ipairs( GetLambdaPlayers() ) do
-        if string.lower( v:GetLambdaName() ) == string.lower( name ) then found = v end
+        if string.lower( v:Nick() ) == string.lower( name ) then found = v end
     end
 
     -- If fails to find a lambda with the full name, tries to find the name somewhere.
@@ -48,7 +47,7 @@ local function FindLambda( name )
     -- This one is just a russian roulette if multiple lambdas have similar names
     if !found then
         for k, v in ipairs( GetLambdaPlayers() ) do
-            if string.match( string.lower( v:GetLambdaName() ), string.lower( name ) ) then found = v end
+            if string.match( string.lower( v:Nick() ), string.lower( name ) ) then found = v end
         end
     end
 
