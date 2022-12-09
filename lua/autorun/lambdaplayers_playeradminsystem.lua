@@ -17,7 +17,7 @@ local colText = Color(130,164,192)
 hook.Add( "LambdaOnConvarsCreated", "lambdaplayeradminsystemConvars", function()
 
     CreateLambdaConvar( "lambdaplayers_pas_enabled", 1, true, false, false, "Enables the player administration system that allows player admin to do certain actions on Lambda Players using chat commands", 0, 1, { name = "Enable Player Admin System", type = "Bool", category = "Player Admin System" } )
-    CreateLambdaConvar( "lambdaplayers_pas_chatecho", 1, true, false, false, "If admins using commands should have their commands echo into chat", 0, 1, { name = "Enable Commands Chat Print", type = "Bool", category = "Player Admin System" } )
+    CreateLambdaConvar( "lambdaplayers_pas_chatecho", 1, true, false, false, "Whenever the commands being used should be printed in the chat", 0, 1, { name = "Enable Commands Chat Print", type = "Bool", category = "Player Admin System" } )
     CreateLambdaConvar( "lambdaplayers_pas_cmdprefix", ",", true, false, false, "The prefix used for chat commands. This will only accept one character!", nil, nil, { type = "Text", name = "Command Prefix", category = "Player Admin System" } )
 
 end )
@@ -320,11 +320,12 @@ end)
 
 -- HOOK: Check player chat input for administrative commands
 hook.Add( "PlayerSay", "lambdaplayers_pas_plysay", function( ply, text )
-    -- if it doesn't look like a command or the addon is disabled we don't care.
+    -- We avoid empty string and we only take the first letter. Might change later but not much point.
+    local prefix = GetConVar( "lambdaplayers_pas_cmdprefix" ):GetString() != "" and string.sub( GetConVar( "lambdaplayers_pas_cmdprefix" ):GetString(), 1, 1 ) or ","
 
-    if string.StartWith( string.lower(text), GetConVar( "lambdaplayers_pas_cmdprefix" ):GetString() ) and GetConVar( "lambdaplayers_pas_enabled" ):GetBool() then
+    -- if it doesn't start like a command or the addon is disabled we don't care.
+    if string.StartWith( string.lower(text), prefix ) and GetConVar( "lambdaplayers_pas_enabled" ):GetBool() then
 
-        PrintTable(gaggedLambdas)
         -- Check if the one inputing the command is an admin otherwise tells player.
         if !ply:IsAdmin() then ply:PrintMessage( HUD_PRINTTALK, "You need to be an admin to use "..c_cmd ) return "" end
         
