@@ -4,8 +4,9 @@ local random = math.random
 local VectorRand = VectorRand
 local max = math.max
 local net = net
-local colName = Color(0,255,0)
-local colText = Color(130,164,192)
+local color_white = color_white
+local color_blue = Color( 0, 255, 0 )
+local color_admin = Color( 150, 25, 0 )
 
 
 
@@ -119,7 +120,7 @@ local PAScmds = {
         --ply.lambdaLastPos = ply:GetPos()
         ply:SetPos( lambda:GetPos() + ( ( ply:GetPos() - lambda:GetPos() ):Angle():Forward() ) * 100 )
 
-        PrintToChat( { colName, ply:GetName(), colText, " teleported to ", colName, lambda:GetLambdaName() } )
+        PrintToChat( { color_admin, ply:GetName(), color_white, " teleported to ", lambda:GetDisplayColor( ply ), lambda:GetLambdaName() } )
     end,
 
     -- Teleports the Lambda Player to the Player
@@ -129,7 +130,7 @@ local PAScmds = {
         lambda.CurNoclipPos = ply:GetEyeTrace().HitPos
         lambda:SetPos( ply:GetPos() + ply:GetForward()*100 )
 
-        PrintToChat( { colName, ply:GetName(), colText, " brought ", colName, lambda:GetLambdaName(), colText," to themselves" } )
+        PrintToChat( { color_admin, ply:GetName(), color_white, " brought ", lambda:GetDisplayColor( ply ), lambda:GetLambdaName(), color_white," to themselves" } )
     end,
 
     -- Returns the Lambda Player to where they originally were
@@ -140,7 +141,7 @@ local PAScmds = {
         lambda:SetPos( lambda.lambdaLastPos )
         lambda.lambdaLastPos = nil
 
-        PrintToChat( { colName, ply:GetName(), colText, " returned ", colName, lambda:GetLambdaName(), colText, " back to their original position" } )
+        PrintToChat( { color_admin, ply:GetName(), color_white, " returned ", lambda:GetDisplayColor( ply ), lambda:GetLambdaName(), color_white, " back to their original position" } )
     end,
 
     -- Removes all spawned entities of the Lambda Player
@@ -148,7 +149,7 @@ local PAScmds = {
     ["clearents"] = function( lambda, ply )
         lambda:CleanSpawnedEntities()
 
-        PrintToChat( { colName, ply:GetName(), colText, " cleared ", colName, lambda:GetLambdaName(), colText, " entities" } )
+        PrintToChat( { color_admin, ply:GetName(), color_white, " cleared ", lambda:GetDisplayColor( ply ), lambda:GetLambdaName(), color_white, " entities" } )
     end,
 
     -- Stops the Lambda Player from being able to use text chat
@@ -162,7 +163,7 @@ local PAScmds = {
         gaggedLambdas[lambda:EntIndex()] = true -- Add Lambda to the gaggedlambdas
 
 
-        PrintToChat( { colName, ply:GetName(), colText, " gagged ", colName, lambda:GetLambdaName() } )
+        PrintToChat( { color_admin, ply:GetName(), color_white, " gagged ", lambda:GetDisplayColor( ply ), lambda:GetLambdaName() } )
     end,
 
     -- Restores the Lambda Player ability from using text chat
@@ -175,7 +176,7 @@ local PAScmds = {
 
         gaggedLambdas[lambda:EntIndex()] = nil
 
-        PrintToChat( { colName, ply:GetName(), colText, " ungagged ", colName, lambda:GetLambdaName() } )
+        PrintToChat( { color_admin, ply:GetName(), color_white, " ungagged ", lambda:GetDisplayColor( ply ), lambda:GetLambdaName() } )
     end,
 
     -- Kills the Lambda Player
@@ -187,7 +188,7 @@ local PAScmds = {
         dmginfo:SetInflictor( lambda )
         lambda:LambdaOnKilled( dmginfo ) -- Could just use TakeDamage but I find this funny
 
-        PrintToChat( { colName, ply:GetName(), colText, " slayed ", colName, lambda:GetLambdaName() } )
+        PrintToChat( { color_admin, ply:GetName(), color_white, " slayed ", lambda:GetDisplayColor( ply ), lambda:GetLambdaName() } )
     end,
 
     -- Removes the Lambda Player from the server
@@ -199,7 +200,7 @@ local PAScmds = {
 
         lambda:Remove()
 
-        PrintToChat( { colName, ply:GetName(), colText, " kicked ", colName, lambda:GetLambdaName(), " ", colText, "(", colName, reason, colText ,")" } )
+        PrintToChat( { color_admin, ply:GetName(), color_white, " kicked ", lambda:GetDisplayColor( ply ), lambda:GetLambdaName(), " ", color_white, "(", color_blue, reason, color_white ,")" } )
     end,
 
     -- Deals an amount of damage to the Lambda Player
@@ -218,7 +219,7 @@ local PAScmds = {
 
         lambda:TakeDamage( damage, lambda, lambda )
 
-        PrintToChat( { colName, ply:GetName(), colText," slapped ", colName, lambda:GetLambdaName(), colText, " with ", colName, tostring(damage), colText, " damage" } )
+        PrintToChat( { color_admin, ply:GetName(), color_white," slapped ", lambda:GetDisplayColor( ply ), lambda:GetLambdaName(), color_white, " with ", color_blue, tostring(damage), color_white, " damage" } )
     end,
 
     -- Deals an amount of damage to the Lambda Player an amount of times
@@ -242,7 +243,7 @@ local PAScmds = {
             lambda:TakeDamage( damage, lambda, lambda )
         end)
 
-        PrintToChat( { colName, ply:GetName(), colText, " whipped ", colName, lambda:GetLambdaName(), " ", tostring(times), colText, " times with ", colName, tostring(damage), colText, " damage" } )
+        PrintToChat( { color_admin, ply:GetName(), color_white, " whipped ", lambda:GetDisplayColor( ply ), lambda:GetLambdaName(), " ", color_blue, tostring(times), color_white, " times with ", color_blue, tostring(damage), color_white, " damage" } )
     end,
 
     -- Sets the Lambda Player on fire for an amount of time
@@ -252,7 +253,7 @@ local PAScmds = {
 
         lambda:Ignite(time)
         
-        PrintToChat( { colName, ply:GetName(), colText, " set ", colName, lambda:GetLambdaName(), " on fire for ", colName, tostring(time), " seconds" } )
+        PrintToChat( { color_admin, ply:GetName(), color_white, " set ", lambda:GetDisplayColor( ply ), lambda:GetLambdaName(), " on fire for ", color_blue, tostring(time), color_white, " seconds" } )
     end,
 
     -- Extinguish the Lambda Player if they are on fire
@@ -262,7 +263,7 @@ local PAScmds = {
         
         lambda:Extinguish()
     
-        PrintToChat( { colName, plt:GetName(), colText, " extinguished ", colName, lambda:GetLambdaName()} )
+        PrintToChat( { color_admin, plt:GetName(), color_white, " extinguished ", lambda:GetDisplayColor( ply ), lambda:GetLambdaName()} )
     end,
 
     -- Sets the Lambda Player's health to the given amount
@@ -276,7 +277,7 @@ local PAScmds = {
             lambda:SetHealth(amount)
         end
 
-        PrintToChat( { colName, ply:GetName(), colText," set ", colName, lambda:GetLambdaName(), colText, " health to ", colName, tostring(amount) } )
+        PrintToChat( { color_admin, ply:GetName(), color_white," set ", lambda:GetDisplayColor( ply ), lambda:GetLambdaName(), color_white, " health to ", color_blue, tostring(amount) } )
     end,
 
     -- Sets the Lambda Player's armor to the given amount
@@ -288,7 +289,7 @@ local PAScmds = {
 
         lambda:SetArmor( amount )
 
-        PrintToChat( { colName, ply:GetName(), colText," set ", colName, lambda:GetLambdaName(), colText, " armor to ", colName, tostring(amount) } )
+        PrintToChat( { color_admin, ply:GetName(), color_white," set ", lambda:GetDisplayColor( ply ), lambda:GetLambdaName(), color_white, " armor to ", color_blue, tostring(amount) } )
     end
 }
 
@@ -336,7 +337,8 @@ hook.Add( "PlayerSay", "lambdaplayers_pas_plysay", function( ply, text )
         if c_name == nil then ply:PrintMessage( HUD_PRINTTALK, c_cmd.." is missing a target" ) return "" end
         
         -- Check if the Lambda exist otherwise tells command user.
-        if !FindLambda( c_name ) then ply:PrintMessage( HUD_PRINTTALK, c_name.." is not a valid target" ) return "" end
+        local lambda = FindLambda( c_name )
+        if !IsValid( lambda ) then ply:PrintMessage( HUD_PRINTTALK, c_name.." is not a valid target" ) return "" end
         
         -- Check if the command exist then execute it otherwise tells command user.
         if ( PAScmds[c_cmd] ) then PAScmds[c_cmd]( lambda, ply, c_ex1, c_ex2 ) else ply:PrintMessage( HUD_PRINTTALK, c_cmd.." is not a valid command" ) end
