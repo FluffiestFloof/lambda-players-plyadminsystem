@@ -325,21 +325,20 @@ hook.Add( "PlayerSay", "lambdaplayers_pas_plysay", function( ply, text )
     -- if it doesn't start like a command or the addon is disabled we don't care.
     if string.StartWith( string.lower(text), prefix ) and GetConVar( "lambdaplayers_pas_enabled" ):GetBool() then
 
-        -- Check if the one inputing the command is an admin otherwise tells player.
+        -- Check if the one inputing the command is an admin otherwise tells command user.
         if !ply:IsAdmin() then ply:PrintMessage( HUD_PRINTTALK, "You need to be an admin to use "..c_cmd ) return "" end
         
         -- Extract all the information out of the provided chat line.
         local c_cmd, c_name, c_ex1, c_ex2 = ExtractInfo( text )
         c_cmd = string.sub( c_cmd, 2 ) -- Remove comma
         
-        -- Check if a name was provided otherwise tells player.
+        -- Check if a name was provided otherwise tells command user.
         if c_name == nil then ply:PrintMessage( HUD_PRINTTALK, c_cmd.." is missing a target" ) return "" end
         
-        -- Check if the Lambda exist otherwise tells player.
-        local lambda = FindLambda( c_name )
-        if !IsValid( lambda ) then ply:PrintMessage( HUD_PRINTTALK, c_name.." is not a valid target" ) return "" end
+        -- Check if the Lambda exist otherwise tells command user.
+        if !FindLambda( c_name ) then ply:PrintMessage( HUD_PRINTTALK, c_name.." is not a valid target" ) return "" end
         
-        -- Check if the command exist then execute it otherwise tells player.
+        -- Check if the command exist then execute it otherwise tells command user.
         if ( PAScmds[c_cmd] ) then PAScmds[c_cmd]( lambda, ply, c_ex1, c_ex2 ) else ply:PrintMessage( HUD_PRINTTALK, c_cmd.." is not a valid command" ) end
         return ""
     end
