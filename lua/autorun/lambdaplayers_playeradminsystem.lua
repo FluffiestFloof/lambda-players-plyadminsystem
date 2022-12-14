@@ -166,7 +166,7 @@ local PAScmds = {
         PrintToChat( { color_admin, ply:GetName(), color_white, " gagged ", lambda:GetDisplayColor( ply ), lambda:GetLambdaName() } )
     end,
 
-    -- Restores the Lambda Player ability from using text chat
+    -- Restores the Lambda Player's ability to use text chat
     -- ,ungag [target]
     ["ungag"] = function( lambda, ply )
         
@@ -177,6 +177,32 @@ local PAScmds = {
         gaggedLambdas[lambda:EntIndex()] = nil
 
         PrintToChat( { color_admin, ply:GetName(), color_white, " ungagged ", lambda:GetDisplayColor( ply ), lambda:GetLambdaName() } )
+    end,
+
+    -- Stops the Lambda Player from being able to use voice chat
+    -- ,mute [target]
+    ["mute"] = function( lambda, ply )
+
+        if lambda:IsMuted() then
+            ply:PrintMessage( HUD_PRINTTALK, lambda:GetLambdaName().." is already muted" ) return
+        end
+
+        lambda:SetMuted( true )
+
+        PrintToChat( { color_admin, ply:GetName(), color_white, " muted ", lambda:GetDisplayColor( ply ), lambda:GetLambdaName() } )
+    end,
+
+    -- Restores the Lambda Player's ability to use voice chat
+    -- ,unmute [target]
+    ["unmute"] = function( lambda, ply )
+        
+        if !lambda:IsMuted() then
+            ply:PrintMessage( HUD_PRINTTALK, lambda:GetLambdaName().." is not muted" ) return
+        end
+
+        lambda:SetMuted( false )
+
+        PrintToChat( { color_admin, ply:GetName(), color_white, " unmuted ", lambda:GetDisplayColor( ply ), lambda:GetLambdaName() } )
     end,
 
     -- Kills the Lambda Player

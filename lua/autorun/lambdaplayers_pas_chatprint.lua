@@ -1,3 +1,5 @@
+-- TODO: Eventually replace this with the built in Lambda Player chat print.
+
 if SERVER then
     
     util.AddNetworkString("lambdaplayers_pas_chatprint")

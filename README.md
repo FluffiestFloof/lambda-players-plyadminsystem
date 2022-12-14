@@ -3,7 +3,7 @@
 An $\color{white}\textsf{unofficial}$ addon for Lambda Players that adds the ability for server admins to administrate Lambdas using the scoreboard / chat commands.
 
 > $\color{#58A6FF}\textsf{\Large\&#x24D8;\kern{0.2cm}\normalsize Note}$ <br>
-> This will not make Lambda Players able to administrate the server. This is for Player usage.
+> This will not make Lambda Players able to administrate the server. This is for real players' usage only.
 
 It currently overrides the scoreboard provided by the Lambda Players due to the implementation of the ability to right click on scoreboard icons to do certain actions on Lambda Players, so be aware of that.<br>
 This is probably going to change. Maybe.
@@ -24,6 +24,8 @@ Currently implements the following commands;
 - ,setarmor [target] [amount]
 - ,gag [target]
 - ,ungag [target]
+- ,mute [target]
+- ,unmute [target]
 
 Chat commands also supports incomplete names and double quotes.<br>
 To kick a Lambda Player named "Santa Claus The Almighty" you can write;
