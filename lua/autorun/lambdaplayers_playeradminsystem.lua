@@ -111,6 +111,11 @@ end
 local slapSounds = { "physics/body/body_medium_impact_hard1.wav", "physics/body/body_medium_impact_hard2.wav", "physics/body/body_medium_impact_hard3.wav", "physics/body/body_medium_impact_hard5.wav", "physics/body/body_medium_impact_hard6.wav", "physics/body/body_medium_impact_soft5.wav", "physics/body/body_medium_impact_soft6.wav", "physics/body/body_medium_impact_soft7.wav" }
 local gaggedLambdas = {}
 
+--[[ TODO
+    God / Ungod
+    Jail / Unjail / TPJail
+]]
+
 -- Table of Functions. This is where all the commands actual effects are.
 local PAScmds = {
     
