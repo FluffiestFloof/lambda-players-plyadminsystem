@@ -1,5 +1,9 @@
 util.AddNetworkString("lambdaplayers_pas_chatprint")
 
+local color_white = color_white
+local color_blue = Color( 0, 255, 0 )
+local color_admin = Color( 150, 25, 0 )
+
 -- ---------------------- --
 -- // HELPER FUNCTIONS // --
 -- ---------------------- --

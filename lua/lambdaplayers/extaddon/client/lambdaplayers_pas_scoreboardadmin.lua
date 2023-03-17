@@ -2,25 +2,16 @@
 -- Whenever I get smart enough to do that I'll do an actual addon to the scoreboard
 -- Right now the only option I know is to just override the override of the scoreboard
 
+local canoverride = GetConVar( "lambdaplayers_lambda_overridegamemodehooks" )
+_LambdaGamemodeHooksOverriden = _LambdaGamemodeHooksOverriden or false
+
+if !canoverride:GetBool() then return end
 local table_Add = table.Add
 local draw = draw
 local CurTime = CurTime
 local math = math
 local sub = string.sub
 local Material = Material
-local pnlMeta = FindMetaTable( "Panel" )
-
-local function CreateProfilePictureMat( ent )
-    local pfp = ent:GetProfilePicture()
-    
-    local profilepicturematerial = Material( pfp )
-
-    if profilepicturematerial:IsError() then
-        local model = ent:GetModel()
-        profilepicturematerial = Material( "spawnicons/" .. sub( model, 1, #model - 4 ) .. ".png" )
-    end
-    return profilepicturematerial
-end
 
 hook.Add( "Initialize", "lambdaplayers_overridegamemodehooks", function() 
 
@@ -46,7 +37,7 @@ hook.Add( "Initialize", "lambdaplayers_overridegamemodehooks", function()
                 
                 adminmenu:Open()
             end
-
+    
             self.Avatar = vgui.Create( "AvatarImage", self.AvatarButton )
             self.Avatar:SetSize( 32, 32 )
             self.Avatar:SetMouseInputEnabled( false )
@@ -101,7 +92,7 @@ hook.Add( "Initialize", "lambdaplayers_overridegamemodehooks", function()
             if !pl.IsLambdaPlayer then
                 self.Avatar:SetPlayer( pl )
             else
-                self.LambdaAvatar:SetMaterial( CreateProfilePictureMat( pl ) )
+                self.LambdaAvatar:SetMaterial( pl:GetPFPMat() )
                 self.LambdaAvatar:Show()
             end
             
@@ -173,7 +164,7 @@ hook.Add( "Initialize", "lambdaplayers_overridegamemodehooks", function()
             --
             -- Connecting players go at the very bottom
             --
-            if ( self.Player:Team() == TEAM_CONNECTING ) then
+            if ( self.Player:IsPlayer() and self.Player:Team() == TEAM_CONNECTING ) then
                 self:SetZPos( 2000 + self.Player:EntIndex() )
                 return
             end
@@ -197,7 +188,7 @@ hook.Add( "Initialize", "lambdaplayers_overridegamemodehooks", function()
             -- We draw our background a different colour based on the status of the player
             --
     
-            if ( self.Player:Team() == TEAM_CONNECTING ) then
+            if ( self.Player:IsPlayer() and self.Player:Team() == TEAM_CONNECTING ) then
                 draw.RoundedBox( 4, 0, 0, w, h, Color( 200, 200, 200, 200 ) )
                 return
             end
@@ -207,7 +198,7 @@ hook.Add( "Initialize", "lambdaplayers_overridegamemodehooks", function()
                 return
             end
     
-            if ( self.Player:IsAdmin() ) then
+            if ( self.Player:IsPlayer() and self.Player:IsAdmin() ) then
                 draw.RoundedBox( 4, 0, 0, w, h, Color( 230, 255, 230, 255 ) )
                 return
             end
@@ -352,12 +343,12 @@ hook.Add( "Initialize", "lambdaplayers_overridegamemodehooks", function()
             self.LambdaAvatar = vgui.Create( "DImage", self )
             self.LambdaAvatar:SetSize( 32, 32 )
             self.LambdaAvatar:Dock( LEFT )
-            self.LambdaAvatar:SetMaterial( CreateProfilePictureMat( ply ) )
+            self.LambdaAvatar:SetMaterial( ply:GetPFPMat() )
         else
             self.Avatar:SetPlayer( ply )
         end
 
-        self.Color = team.GetColor( ply:Team() )
+        self.Color = team.GetColor( ply:IsPlayer() and ply:Team() or 0 )
         
         self:InvalidateLayout()
     
@@ -399,6 +390,8 @@ hook.Add( "Initialize", "lambdaplayers_overridegamemodehooks", function()
     end
     
     derma.DefineControl( "VoiceNotify", "", PANEL, "DPanel" )
+    
+    
     
     function GAMEMODE:PlayerStartVoice( ply )
     
@@ -468,6 +461,7 @@ hook.Add( "Initialize", "lambdaplayers_overridegamemodehooks", function()
     end
     
     hook.Add( "InitPostEntity", "CreateVoiceVGUI", CreateVoiceVGUI )
+
 
 end )
  
