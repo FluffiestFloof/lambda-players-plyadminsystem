@@ -270,6 +270,32 @@ local PAScmds = {
         PrintToChat( { color_admin, plt:GetName(), color_white, " extinguished ", lambda:GetDisplayColor( ply ), lambda:GetLambdaName()} )
     end,
 
+    -- Gives god mode to the Lambda Player
+    -- ,freeze [target]
+    ["freeze"] = function( lambda, ply )
+
+        if lambda.l_isfrozen  then
+            ply:PrintMessage( HUD_PRINTTALK, lambda:GetLambdaName().." is already frozen" ) return
+        end
+
+        lambda:Lock()
+
+        PrintToChat( { color_admin, ply:GetName(), color_white, " froze ", lambda:GetDisplayColor( ply ), lambda:GetLambdaName() } )
+    end,
+
+    -- Removes god mode to the Lambda Player
+    -- ,unfreeze [target]
+    ["unfreeze"] = function( lambda, ply )
+
+        if !lambda.l_isfrozen  then
+            ply:PrintMessage( HUD_PRINTTALK, lambda:GetLambdaName().." is not frozen" ) return
+        end
+
+        lambda:UnLock()
+
+        PrintToChat( { color_admin, ply:GetName(), color_white, " unfroze ", lambda:GetDisplayColor( ply ), lambda:GetLambdaName() } )
+    end,
+
     -- Sets the Lambda Player's health to the given amount
     -- ,sethealth [target] [amount] // Amount defaults to 0
     ["sethealth"] = function( lambda, ply, amount )
@@ -301,7 +327,7 @@ local PAScmds = {
     ["god"] = function( lambda, ply )
 
         if lambda.l_godmode then
-            ply:PrintMessage( HUD_PRINTTALK, lambda:GetLambdaName().." is already godmoded" ) return
+            ply:PrintMessage( HUD_PRINTTALK, lambda:GetLambdaName().." is already in godmode" ) return
         end
 
         lambda:GodEnable()
@@ -314,7 +340,7 @@ local PAScmds = {
     ["ungod"] = function( lambda, ply )
 
         if !lambda.l_godmode then
-            ply:PrintMessage( HUD_PRINTTALK, lambda:GetLambdaName().." is not a god" ) return
+            ply:PrintMessage( HUD_PRINTTALK, lambda:GetLambdaName().." is not in godmode" ) return
         end
 
         lambda:GodDisable()
