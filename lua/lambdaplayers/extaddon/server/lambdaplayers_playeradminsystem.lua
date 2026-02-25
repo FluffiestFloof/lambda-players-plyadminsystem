@@ -190,11 +190,7 @@ local PAScmds = {
     -- Kills the Lambda Player
     -- ,slay [target]
     ["slay"] = function( lambda, ply )
-        local dmginfo = DamageInfo()
-        dmginfo:SetDamage( 0 )
-        dmginfo:SetAttacker( lambda )
-        dmginfo:SetInflictor( lambda )
-        lambda:LambdaOnKilled( dmginfo ) -- Could just use TakeDamage but I find this funny
+        lambda:Kill()
 
         PrintToChat( { color_admin, ply:GetName(), color_white, " slayed ", lambda:GetDisplayColor( ply ), lambda:GetLambdaName() } )
     end,
