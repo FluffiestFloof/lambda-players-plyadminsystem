@@ -94,14 +94,9 @@ end
 -- // COMMANDS INTERACTIONS // --
 -- --------------------------- --
 
---[[ TODO
-    God / Ungod
-    Jail / Unjail / TPJail
-]]
-
 -- Table of Functions. This is where all the commands actual effects are.
 local PAScmds = {
-    
+
     -- Teleports the Player to the Lambda Player
     -- ,goto [target]
     ["goto"] = function( lambda, ply )
@@ -303,6 +298,32 @@ local PAScmds = {
         lambda:SetArmor( amount )
 
         PrintToChat( { color_admin, ply:GetName(), color_white," set ", lambda:GetDisplayColor( ply ), lambda:GetLambdaName(), color_white, " armor to ", color_blue, tostring(amount) } )
+    end,
+
+    -- Gives god mode to the Lambda Player
+    -- ,god [target]
+    ["god"] = function( lambda, ply )
+
+        if lambda.l_godmode then
+            ply:PrintMessage( HUD_PRINTTALK, lambda:GetLambdaName().." is already godmoded" ) return
+        end
+
+        lambda:GodEnable()
+
+        PrintToChat( { color_admin, ply:GetName(), color_white, " gave godmode to ", lambda:GetDisplayColor( ply ), lambda:GetLambdaName() } )
+    end,
+
+    -- Removes god mode to the Lambda Player
+    -- ,ungod [target]
+    ["ungod"] = function( lambda, ply )
+
+        if !lambda.l_godmode then
+            ply:PrintMessage( HUD_PRINTTALK, lambda:GetLambdaName().." is not a god" ) return
+        end
+
+        lambda:GodDisable()
+
+        PrintToChat( { color_admin, ply:GetName(), color_white, " revoked godmode from ", lambda:GetDisplayColor( ply ), lambda:GetLambdaName() } )
     end
 }
 
