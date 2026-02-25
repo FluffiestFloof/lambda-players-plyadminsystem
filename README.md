@@ -20,12 +20,16 @@ Currently implements the following commands;
 - ,whip [target] [damage] [times]
 - ,ignite [target] [time]
 - ,extinguish [target]
-- ,sethealth [target] [amount]
-- ,setarmor [target] [amount]
 - ,gag [target]
 - ,ungag [target]
+- ,freeze [target]
+- ,unfreeze [target]
+- ,god [target]
+- ,ungod [target]
 - ,mute [target]
 - ,unmute [target]
+- ,sethealth [target] [amount]
+- ,setarmor [target] [amount]
 
 Chat commands also supports incomplete names and double quotes.<br>
 To kick a Lambda Player named "Santa Claus The Almighty" you can write;
