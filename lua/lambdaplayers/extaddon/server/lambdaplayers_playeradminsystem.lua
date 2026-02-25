@@ -291,7 +291,7 @@ local PAScmds = {
     ["setarmor"] = function( lambda, ply, amount )
         amount = tonumber(amount) or 0
 
-        amount = max( 0, amount ) -- Prevent setting armor to negative
+        amount = math.max( 0, amount ) -- Prevent setting armor to negative
 
         lambda:SetArmor( amount )
 
