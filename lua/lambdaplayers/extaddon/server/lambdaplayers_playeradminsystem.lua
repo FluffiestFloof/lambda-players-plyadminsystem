@@ -8,6 +8,9 @@ local color_admin = Color( 150, 25, 0 )
 -- // HELPER FUNCTIONS // --
 -- ---------------------- --
 
+local slapSounds = { "physics/body/body_medium_impact_hard1.wav", "physics/body/body_medium_impact_hard2.wav", "physics/body/body_medium_impact_hard3.wav", "physics/body/body_medium_impact_hard5.wav", "physics/body/body_medium_impact_hard6.wav", "physics/body/body_medium_impact_soft5.wav", "physics/body/body_medium_impact_soft6.wav", "physics/body/body_medium_impact_soft7.wav" }
+local gaggedLambdas = {}
+local mutedLambdas = {}
 
 -- Helper function to find if a Lambda with that name exist
 local function FindLambda( name )
@@ -76,15 +79,20 @@ local function PrintToChat( tbl )
     end
 end
 
+-- We somehow can no longer access SetMuted and IsMuted so we're doing it dirty
+local function MuteLambda( lambda, bool )
+    if lambda:IsValid() then
+        for i, v in ipairs( player.GetAll() ) do
+            lambda.l_ismuted = bool
+        end
+        if bool then mutedLambdas[lambda:EntIndex()] = true else mutedLambdas[lambda:EntIndex()] = nil end
+    end
+end
 
 
 -- --------------------------- --
 -- // COMMANDS INTERACTIONS // --
 -- --------------------------- --
-
-
-local slapSounds = { "physics/body/body_medium_impact_hard1.wav", "physics/body/body_medium_impact_hard2.wav", "physics/body/body_medium_impact_hard3.wav", "physics/body/body_medium_impact_hard5.wav", "physics/body/body_medium_impact_hard6.wav", "physics/body/body_medium_impact_soft5.wav", "physics/body/body_medium_impact_soft6.wav", "physics/body/body_medium_impact_soft7.wav" }
-local gaggedLambdas = {}
 
 --[[ TODO
     God / Ungod
@@ -142,7 +150,6 @@ local PAScmds = {
 
         gaggedLambdas[lambda:EntIndex()] = true -- Add Lambda to the gaggedlambdas
 
-
         PrintToChat( { color_admin, ply:GetName(), color_white, " gagged ", lambda:GetDisplayColor( ply ), lambda:GetLambdaName() } )
     end,
 
@@ -163,11 +170,11 @@ local PAScmds = {
     -- ,mute [target]
     ["mute"] = function( lambda, ply )
 
-        if lambda:IsMuted() then
+        if mutedLambdas[lambda:EntIndex()]  then
             ply:PrintMessage( HUD_PRINTTALK, lambda:GetLambdaName().." is already muted" ) return
         end
 
-        lambda:SetMuted( true )
+        MuteLambda( lambda, true )
 
         PrintToChat( { color_admin, ply:GetName(), color_white, " muted ", lambda:GetDisplayColor( ply ), lambda:GetLambdaName() } )
     end,
@@ -176,11 +183,11 @@ local PAScmds = {
     -- ,unmute [target]
     ["unmute"] = function( lambda, ply )
         
-        if !lambda:IsMuted() then
+        if !mutedLambdas[lambda:EntIndex()]  then
             ply:PrintMessage( HUD_PRINTTALK, lambda:GetLambdaName().." is not muted" ) return
         end
 
-        lambda:SetMuted( false )
+        MuteLambda( lambda, false )
 
         PrintToChat( { color_admin, ply:GetName(), color_white, " unmuted ", lambda:GetDisplayColor( ply ), lambda:GetLambdaName() } )
     end,
@@ -361,9 +368,12 @@ hook.Add( "LambdaPlayerSay", "lambdaplayers_pas_lambdasay", function( lambda, te
 
 end)
 
--- HOOK: Removes removed Lambdas from the gag list
+-- HOOK: Removes removed Lambdas from the gag and mute list on death
 hook.Add( "LambdaOnRemove", "lambdaplayers_pas_lambdaremove", function( lambda )
     if gaggedLambdas[lambda:EntIndex()] then
         gaggedLambdas[lambda:EntIndex()] = nil
+    end
+    if mutedLambdas[lambda:EntIndex()] then
+        mutedLambdas[lambda:EntIndex()] = nil
     end
 end)
